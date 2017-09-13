@@ -1,0 +1,6 @@
+[package]
+name = "Rip8"
+version = "0.1.0"
+authors = ["Nundeeh <MichelMoo@web.de>"]
+
+[dependencies]
