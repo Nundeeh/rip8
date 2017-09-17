@@ -34,8 +34,10 @@ impl Chip8 {
   }
 
   fn run_cycle(&mut self) {
+    for x in 0..30 {
     self.fetch_opcode();
     self.run_opcode();
+    }
   }
 
   fn fetch_opcode(&mut self) {
@@ -45,11 +47,74 @@ impl Chip8 {
 
   fn run_opcode(&mut self) {
     match self.opcode & 0xF000 {
+     0x1000 => {
+      //1NNN: Jump to the address NNN  
+      self.pc = self.opcode & 0x0FFF;
+     }
+
      0x2000 =>  {
-      //2NNN: Jump to NNN 
+      //2NNN: call subroutine at NNN -> store pc on stack and jump to address NNN
+      println!("opcode: {:X}, executed", self.opcode);
       self.stack[self.sp as usize] = self.pc;
       self.sp += 1;
       self.pc = self.opcode & 0x0FFF;
+     }
+
+     0x3000 => {
+      //3XNN: skip next instruction if V[X] == NN  
+      let x: u16 = self.register[(self.opcode & 0x0F00 >> 8) as usize] as u16;
+      let y: u16 = (self.opcode & 0x00FF) as u16;
+
+      if x == y {
+        self.pc += 4; 
+      }
+      else {
+        self.pc += 2;
+      }
+     }
+
+     0x4000 => {
+      //4XNN: skip the next instruction if V[X] != NN 
+      let x: u16 = self.register[(self.opcode & 0x0F00 >> 8) as usize] as u16;
+      let y: u16 = (self.opcode & 0x00FF) as u16;
+
+      if x != y {
+        self.pc += 4;
+      }
+      else {
+        self.pc += 2; 
+      }
+     }
+
+     0x5000 => {
+      //5XY0: skip thenext instruction if V[X] == V[Y] 
+      let x: u16 = self.register[(self.opcode & 0x0F00 >> 8) as usize] as u16;
+      let y: u16 = self.register[(self.opcode & 0x00F0 >> 4) as usize] as u16;
+
+      if x == y {
+        self.pc += 4; 
+      }
+      else {
+        self.pc += 2;
+      }
+     }
+
+     0x6000 => {
+      println!("opcode: {:X}, executed", self.opcode);
+      self.register[(self.opcode & 0x0F00 >> 8) as usize] = (self.opcode & 0x00FF) as u8;
+      self.pc += 2; 
+     }
+
+     0xA000 => {
+      println!("opcode: {:X}, executed", self.opcode);
+      self.index = self.opcode & 0x0FFF;
+      self.pc += 2;
+     }
+
+     0xD000 => {
+      //Waiting with the drawing stuff until later, just increase pc for now
+      println!("opcode: {:X}, not implemented yet", self.opcode);
+      self.pc += 2;
      }
 
      _ => println!("opcode: {:X},not implemented yet", self.opcode)
