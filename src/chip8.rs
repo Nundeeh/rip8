@@ -175,10 +175,8 @@ impl Chip8
  }
  
  fn op_Bxxx(&mut self) {
-   //BNNN: jump to the address NNN + V[0]
-   let x: u16 = self.register[(self.opcode & 0x0FFF) as usize] as u16;
-   let y: u16 = self.register[0] as u16;
-   self.pc = x + y;
+   //BNNN: jump to the address V[0] + NNN
+   self.pc = self.register[0] as u16 + self.opcode & 0x0FFF;
   }
 
  fn op_Dxxx(&mut self) {
