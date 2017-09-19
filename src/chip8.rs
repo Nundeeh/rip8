@@ -16,8 +16,8 @@ impl Chip8 {
         for (i, byte) in op_code.iter().enumerate() {
             memory[0x200 + i] = byte.clone();
         }
-        Chip8
-        {
+
+        Chip8 {
             memory,
             register: [0; 16],
             index: 0,
@@ -25,7 +25,7 @@ impl Chip8 {
             display: [0; 30*64],
             stack: [0; 16],
             sp: 0,
-            opcode: 0
+            opcode: 0,
         }
     }
     
@@ -61,70 +61,7 @@ impl Chip8 {
             }
         }
     }
-<<<<<<< HEAD
- }
-
- fn op_4xxx(&mut self) {
-   //4XNN: skip the next instruction if V[X] != NN
-   let x: u16 = self.register[(self.opcode & 0x0F00 >> 8) as usize] as u16;
-   let y: u16 = (self.opcode & 0x00FF) as u16;
-   if x != y
-   {
-    self.pc += 4;
-   }
-   else
-   {
-    self.pc += 2;
-   }
- }
-
- fn op_5xxx(&mut self) {
-  //5XY0: skip thenext instruction if V[X] == V[Y] 
-  let x: u16 = self.register[(self.opcode & 0x0F00 >> 8) as usize] as u16;
-  let y: u16 = self.register[(self.opcode & 0x00F0 >> 4) as usize] as u16;
-
-  if x == y
-  {
-    self.pc += 4; 
-  }
-  else
-  {
-    self.pc += 2;
-  }
- }
-
- fn op_6xxx(&mut self) {
-  //6XNN: sets V[X] to NN
-  self.register[(self.opcode & 0x0F00 >> 8) as usize] = (self.opcode & 0x00FF) as u8;
-  self.pc += 2; 
- }
  
- fn op_7xxx(&mut self) {
-   //7XNN: add NN to V[X]
-   self.register[(self.opcode & 0x0F00 >> 8) as usize] += (self.opcode & 0x00FF) as u8;
-   self.pc += 2;
- }
-
- fn op_8xxx(&mut self) {
-    match self.opcode & 0x000F {
-        0 => {
-            self.register[(0x0F00 >> 8) as usize] = self.register[(0x00F0 >> 4) as usize];
-        } 
-
-        1 => {
-            self.register[(self.opcode & 0x0F00 >> 8) as usize] == 
-                self.register[(self.opcode & 0x0F00) as usize] | self.register[(self.opcode & 0x00F0) as usize >> 4];
-        }
-
-        2 => {
-            self.register[(self.opcode & 0x0F00 >> 8) as usize] == 
-                self.register[(self.opcode & 0x0F00) as usize] & self.register[(self.opcode & 0x00F0) as usize >> 4];
-        }
-
-        _ => {
-            println!("opcode: {:X},not implemented yet", self.opcode);
-=======
-    
     fn op_1xxx(&mut self) {
         //1NNN: Jump to the address NNN
         self.pc = self.opcode & 0x0FFF;
@@ -145,7 +82,6 @@ impl Chip8 {
             self.pc += 4; 
         }
         else {
->>>>>>> 272c199c96300e31f72d4cdf7691a0dedf9c1365
             self.pc += 2;
         }
     }
@@ -185,20 +121,30 @@ impl Chip8 {
         self.register[(self.opcode & 0x0F00 >> 8) as usize] += (self.opcode & 0x00FF) as u8;
         self.pc += 2;
     }
-    
+
     fn op_8xxx(&mut self) {
         match self.opcode & 0x000F {
             0 => {
                 self.register[(0x0F00 >> 8) as usize] = self.register[(0x00F0 >> 4) as usize];
+            } 
+
+            1 => {
+                self.register[(self.opcode & 0x0F00 >> 8) as usize] == 
+                    self.register[(self.opcode & 0x0F00) as usize] | self.register[(self.opcode & 0x00F0) as usize >> 4];
+            }
+
+            2 => {
+                self.register[(self.opcode & 0x0F00 >> 8) as usize] == 
+                    self.register[(self.opcode & 0x0F00) as usize] & self.register[(self.opcode & 0x00F0) as usize >> 4];
             }
 
             _ => {
                 println!("opcode: {:X},not implemented yet", self.opcode);
                 self.pc += 2;
             }
-        }    
-    }
-    
+        }
+    } 
+
     fn op_9xxx(&mut self) {
         //9XY0: skip the next instruction if V[X] != V[Y]
         let x: u16 = self.register[(self.opcode & 0x0F00 >> 8) as usize] as u16;
