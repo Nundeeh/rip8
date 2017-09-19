@@ -126,21 +126,39 @@ impl Chip8 {
         match self.opcode & 0x000F {
             0x0000 => {
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register[((self.opcode & 0x00F0) >> 4) as usize];
+                self.pc += 2;
             } 
 
             0x0001 => {
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] |=
                     self.register[((self.opcode & 0x00F0) >>  4) as usize];
+
+                self.pc += 2;
             }
 
             0x0002 => {
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] &=
                     self.register[((self.opcode & 0x00F0) >>  4) as usize];
+
+                self.pc += 2;
             }
 
             0x003 => {
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] ^= 
                     self.register[((self.opcode & 0x00F0) >>  4) as usize];
+
+                self.pc += 2;
+            }
+
+            0x004 => {
+                self.register[15] =
+                    if self.register[((self.opcode & 0x00F0) >> 4) as usize] >
+                       (0xFF - self.register[((self.opcode & 0x0F00) >> 8) as usize])
+                    {1} else {0};
+                self.register[((self.opcode & 0x0F00) >> 8) as usize] +=
+                    self.register[((self.opcode & 0x00F0) >> 4) as usize];
+
+                self.pc += 2;
             }
 
             _ => {
