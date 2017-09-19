@@ -65,7 +65,6 @@ impl Chip8
       0x2000 =>
       {
         //2NNN: call subroutine at NNN -> store pc on stack and jump to address NNN
-        println!("opcode: {:X}, executed", self.opcode);
         self.stack[self.sp as usize] = self.pc;
         self.sp += 1;
         self.pc = self.opcode & 0x0FFF;
@@ -120,23 +119,16 @@ impl Chip8
 
       0x6000 =>
       {
-        println!("opcode: {:X}, executed", self.opcode);
+        //6XNN: sets V[X] to NN
         self.register[(self.opcode & 0x0F00 >> 8) as usize] = (self.opcode & 0x00FF) as u8;
         self.pc += 2; 
       }
 
-      0xA000 =>
-      {
-        println!("opcode: {:X}, executed", self.opcode);
-        self.index = self.opcode & 0x0FFF;
-        self.pc += 2;
-      }
-      
        0x9000 =>
        {
          //9XY0: skip the next instruction if V[X] != V[Y]
-         let x: u16 self.register[(self.opcode & 0x0F00 >> 8) as usize] as u16;
-         let y: u16 self.register[(self.opcode & 0x00F0 >> 4) as usize] as u16;
+         let x: u16 = self.register[(self.opcode & 0x0F00 >> 8) as usize] as u16;
+         let y: u16 = self.register[(self.opcode & 0x00F0 >> 4) as usize] as u16;
        
          if x != y
          { 
@@ -147,6 +139,13 @@ impl Chip8
            self.pc += 2;
          }
        }
+
+      0xA000 =>
+      {
+        //ANNN: sets the index to the adress NNN
+        self.index = self.opcode & 0x0FFF;
+        self.pc += 2;
+      }
       
       0xD000 =>
       {
@@ -155,7 +154,11 @@ impl Chip8
         self.pc += 2;
       }
 
-      _ => println!("opcode: {:X},not implemented yet", self.opcode)
+      _ => 
+      {
+        println!("opcode: {:X},not implemented yet", self.opcode);
+        self.pc += 2;
+      }
       
     }
   }
