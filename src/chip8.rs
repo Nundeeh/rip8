@@ -55,6 +55,7 @@ impl Chip8 {
             0xA000 => self.op_Axxx(),
             0xB000 => self.op_Bxxx(),
             0xD000 => self.op_Dxxx(),
+            0xF000 => self.op_Fxxx(),
             _ => {
                 println!("opcode: {:X},not implemented yet", self.opcode);
                 self.pc += 2;
@@ -195,5 +196,28 @@ impl Chip8 {
         //Waiting with the drawing stuff until later, just increase pc for now
         println!("opcode: {:X}, not implemented yet", self.opcode);
         self.pc += 2;
+    }
+    
+    fn op_Fxxx(&mut self) {
+        match self.opcode & 0x00FF {
+            0x0055 => {
+                for x in 0..((self.opcode & 0x0F00) >> 8) {
+                    self.memory[self.index as usize] = self.register[x as usize];
+                    self.index += 1;
+                }
+                self.pc += 2;
+            }
+            0x0065 => {
+                for x in 0..((self.opcode & 0x0F00) >> 8) {
+                    self.register[x as usize] = self.memory[self.index as usize];
+                    self.index += 1;
+                }
+                self.pc += 2;
+            }       
+            _ => {
+                println!("opcode: {:X}, not implemented yet", self.opcode);
+                self.pc += 2;
+            }
+        }
     }
 }
