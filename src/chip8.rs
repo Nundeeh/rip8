@@ -59,6 +59,7 @@ impl Chip8
       0x5000 => self.op_5xxx(),
       0x6000 => self.op_6xxx(),
       0x7000 => self.op_7xxx(),
+      0x8000 => self.op_8xxx(),
       0x9000 => self.op_9xxx(),
       0xA000 => self.op_Axxx(),
       0xB000 => self.op_Bxxx(),
@@ -135,8 +136,21 @@ impl Chip8
  
  fn op_7xxx(&mut self) {
    //7XNN: add NN to V[X]
-   self.register[(self.opcode & 0x0F00 >> 8) as usize] = ((self.opcode & 0x0F00 >> 8    ) + (self.opcode & 0x00FF)) as u8;
+   self.register[(self.opcode & 0x0F00 >> 8) as usize] += (self.opcode & 0x00FF) as u8;
    self.pc += 2;
+ }
+
+ fn op_8xxx(&mut self) {
+    match self.opcode & 0x000F {
+        0 => {
+            self.register[(0x0F00 >> 8) as usize] = self.register[(0x00F0 >> 4) as usize];
+        } 
+
+        _ => {
+            println!("opcode: {:X},not implemented yet", self.opcode);
+            self.pc += 2;
+        }
+    }    
  }
  
  fn op_9xxx(&mut self) {
