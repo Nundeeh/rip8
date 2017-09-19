@@ -146,6 +146,16 @@ impl Chip8
             self.register[(0x0F00 >> 8) as usize] = self.register[(0x00F0 >> 4) as usize];
         } 
 
+        1 => {
+            self.register[(self.opcode & 0x0F00 >> 8) as usize] == 
+                self.register[(self.opcode & 0x0F00) as usize] | self.register[(self.opcode & 0x00F0) as usize >> 4];
+        }
+
+        2 => {
+            self.register[(self.opcode & 0x0F00 >> 8) as usize] == 
+                self.register[(self.opcode & 0x0F00) as usize] & self.register[(self.opcode & 0x00F0) as usize >> 4];
+        }
+
         _ => {
             println!("opcode: {:X},not implemented yet", self.opcode);
             self.pc += 2;
