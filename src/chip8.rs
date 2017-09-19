@@ -37,7 +37,7 @@ impl Chip8 {
     }
     
     fn fetch_opcode(&mut self) {
-        self.opcode = (self.memory[self.pc as usize] as u16) << 8 
+        self.opcode = ((self.memory[self.pc as usize] as u16) << 8) 
         | self.memory[(self.pc + 1) as usize] as u16;
     }
     
@@ -76,7 +76,7 @@ impl Chip8 {
     
     fn op_3xxx(&mut self) {
         //3XNN: skip next instruction if V[X] == NN
-        let x: u16 = self.register[(self.opcode & 0x0F00 >> 8) as usize] as u16;
+        let x: u16 = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
         let y: u16 = (self.opcode & 0x00FF) as u16;
         if x == y {
             self.pc += 4; 
@@ -88,7 +88,7 @@ impl Chip8 {
     
     fn op_4xxx(&mut self) {
         //4XNN: skip the next instruction if V[X] != NN
-        let x: u16 = self.register[(self.opcode & 0x0F00 >> 8) as usize] as u16;
+        let x: u16 = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
         let y: u16 = (self.opcode & 0x00FF) as u16;
         if x != y {
             self.pc += 4;
@@ -100,8 +100,8 @@ impl Chip8 {
 
     fn op_5xxx(&mut self) {
         //5XY0: skip thenext instruction if V[X] == V[Y] 
-        let x: u16 = self.register[(self.opcode & 0x0F00 >> 8) as usize] as u16;
-        let y: u16 = self.register[(self.opcode & 0x00F0 >> 4) as usize] as u16;
+        let x: u16 = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
+        let y: u16 = self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16;
         if x == y {
             self.pc += 4; 
         }
@@ -112,30 +112,35 @@ impl Chip8 {
     
     fn op_6xxx(&mut self) {
         //6XNN: sets V[X] to NN
-        self.register[(self.opcode & 0x0F00 >> 8) as usize] = (self.opcode & 0x00FF) as u8;
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] = (self.opcode & 0x00FF) as u8;
         self.pc += 2; 
     }
     
     fn op_7xxx(&mut self) {
         //7XNN: add NN to V[X]
-        self.register[(self.opcode & 0x0F00 >> 8) as usize] += (self.opcode & 0x00FF) as u8;
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] += (self.opcode & 0x00FF) as u8;
         self.pc += 2;
     }
 
     fn op_8xxx(&mut self) {
         match self.opcode & 0x000F {
-            0 => {
-                self.register[(0x0F00 >> 8) as usize] = self.register[(0x00F0 >> 4) as usize];
+            0x0000 => {
+                self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register[((self.opcode & 0x00F0) >> 4) as usize];
             } 
 
-            1 => {
-                self.register[(self.opcode & 0x0F00 >> 8) as usize] == 
-                    self.register[(self.opcode & 0x0F00) as usize] | self.register[(self.opcode & 0x00F0) as usize >> 4];
+            0x0001 => {
+                self.register[((self.opcode & 0x0F00) >> 8) as usize] |=
+                    self.register[((self.opcode & 0x00F0) >>  4) as usize];
             }
 
-            2 => {
-                self.register[(self.opcode & 0x0F00 >> 8) as usize] == 
-                    self.register[(self.opcode & 0x0F00) as usize] & self.register[(self.opcode & 0x00F0) as usize >> 4];
+            0x0002 => {
+                self.register[((self.opcode & 0x0F00) >> 8) as usize] &=
+                    self.register[((self.opcode & 0x00F0) >>  4) as usize];
+            }
+
+            0x003 => {
+                self.register[((self.opcode & 0x0F00) >> 8) as usize] ^= 
+                    self.register[((self.opcode & 0x00F0) >>  4) as usize];
             }
 
             _ => {
@@ -147,8 +152,8 @@ impl Chip8 {
 
     fn op_9xxx(&mut self) {
         //9XY0: skip the next instruction if V[X] != V[Y]
-        let x: u16 = self.register[(self.opcode & 0x0F00 >> 8) as usize] as u16;
-        let y: u16 = self.register[(self.opcode & 0x00F0 >> 4) as usize] as u16; 
+        let x: u16 = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
+        let y: u16 = self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16; 
         if x != y {
             self.pc += 4;
         }
