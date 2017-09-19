@@ -58,8 +58,10 @@ impl Chip8
       0x4000 => self.op_4xxx(),
       0x5000 => self.op_5xxx(),
       0x6000 => self.op_6xxx(),
+      0x7000 => self.op_7xxx(),
       0x9000 => self.op_9xxx(),
       0xA000 => self.op_Axxx(),
+      0xB000 => self.op_Bxxx(),
       0xD000 => self.op_Dxxx(),
       _ => {
         println!("opcode: {:X},not implemented yet", self.opcode);
@@ -130,7 +132,13 @@ impl Chip8
   self.register[(self.opcode & 0x0F00 >> 8) as usize] = (self.opcode & 0x00FF) as u8;
   self.pc += 2; 
  }
-
+ 
+ fn op_7xxx(&mut self) {
+   //7XNN: add NN to V[X]
+   self.register[(self.opcode & 0x0F00 >> 8) as usize] = ((self.opcode & 0x0F00 >> 8    ) + (self.opcode & 0x00FF)) as u8;
+   self.pc += 2;
+ }
+ 
  fn op_9xxx(&mut self) {
   //9XY0: skip the next instruction if V[X] != V[Y]
   let x: u16 = self.register[(self.opcode & 0x0F00 >> 8) as usize] as u16;
@@ -151,6 +159,13 @@ impl Chip8
    self.index = self.opcode & 0x0FFF;
    self.pc += 2;
  }
+ 
+ fn op_Bxxx(&mut self) {
+   //BNNN: jump to the address NNN + V[0]
+   let x: u16 = self.register[(self.opcode & 0x0FFF) as usize] as u16;
+   let y: u16 = self.register[0] as u16;
+   self.pc = x + y;
+  }
 
  fn op_Dxxx(&mut self) {
    //Waiting with the drawing stuff until later, just increase pc for now
@@ -158,4 +173,3 @@ impl Chip8
    self.pc += 2;
  }
 }
-
