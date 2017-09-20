@@ -98,7 +98,7 @@ impl Chip8 {
             self.pc += 2;
         }
     }
-
+    
     fn op_5xxx(&mut self) {
         //5XY0: skip thenext instruction if V[X] == V[Y] 
         let x: u16 = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
@@ -122,36 +122,41 @@ impl Chip8 {
         self.register[((self.opcode & 0x0F00) >> 8) as usize] += (self.opcode & 0x00FF) as u8;
         self.pc += 2;
     }
-
+    
     fn op_8xxx(&mut self) {
         match self.opcode & 0x000F {
             0x0000 => {
+                //8XY0: set V[X] = V[Y]
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register[((self.opcode & 0x00F0) >> 4) as usize];
                 self.pc += 2;
             } 
-
+            
             0x0001 => {
+                //8XY1: set V[X] = (V[X] or V[Y])
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] |=
                     self.register[((self.opcode & 0x00F0) >>  4) as usize];
 
                 self.pc += 2;
             }
-
+            
             0x0002 => {
+                //8XY2: set V[X] = (V[X] and V[Y])
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] &=
                     self.register[((self.opcode & 0x00F0) >>  4) as usize];
 
                 self.pc += 2;
             }
-
-            0x003 => {
+            
+            0x0003 => {
+                //8XY3: set V[X] = (V[X] xor V[Y])
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] ^= 
                     self.register[((self.opcode & 0x00F0) >>  4) as usize];
 
                 self.pc += 2;
             }
-
-            0x004 => {
+            
+            0x0004 => {
+                //8XY4: add V[Y] to V[X], if carry set V[F] = 1, if no carry set V[F] = 0
                 self.register[15] =
                     if self.register[((self.opcode & 0x00F0) >> 4) as usize] >
                        (0xFF - self.register[((self.opcode & 0x0F00) >> 8) as usize])
@@ -161,7 +166,14 @@ impl Chip8 {
 
                 self.pc += 2;
             }
-
+            
+            0x0006 => {
+                //8XY5: set V[F] to LSB of V[Y], set V[X] = (V[Y] >> 1)
+                self.register[15] = self.register[((self.opcode & 0x00F0) >> 4) as usize] & 0x000F;
+                self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register[((self.opcode & 0x00F0) >> 4) as usize] >> 1;
+                self.pc += 2;
+            }
+            
             _ => {
                 println!("opcode: {:X},not implemented yet", self.opcode);
                 self.pc += 2;
@@ -198,22 +210,33 @@ impl Chip8 {
         self.pc += 2;
     }
     
+    
     fn op_Fxxx(&mut self) {
         match self.opcode & 0x00FF {
+            0x001E => {
+                //FX1E: add V[X] to I
+                self.index += self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
+                self.pc += 2;
+            }
+            
             0x0055 => {
+                //FX55: store V[0] to V[X] in memory starting with I
                 for x in 0..((self.opcode & 0x0F00) >> 8) {
                     self.memory[self.index as usize] = self.register[x as usize];
                     self.index += 1;
                 }
                 self.pc += 2;
             }
+            
             0x0065 => {
+                //FX65: store memory starting with I in V[0] to V[X]
                 for x in 0..((self.opcode & 0x0F00) >> 8) {
                     self.register[x as usize] = self.memory[self.index as usize];
                     self.index += 1;
                 }
                 self.pc += 2;
-            }       
+            }
+                   
             _ => {
                 println!("opcode: {:X}, not implemented yet", self.opcode);
                 self.pc += 2;
