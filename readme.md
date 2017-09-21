@@ -10,9 +10,6 @@ not implemented yet:
 0NNN
 00E0
 00EE
-8XY5
-8XY7
-8XYE
 CXNN
 DXYN
 EX9E
@@ -23,3 +20,8 @@ FX15
 FX18
 FX29
 FX33
+
+hmm:
+8XY5
+8XY7
+8XYE

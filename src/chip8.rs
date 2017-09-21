@@ -135,7 +135,6 @@ impl Chip8 {
                 //8XY1: set V[X] = (V[X] or V[Y])
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] |=
                     self.register[((self.opcode & 0x00F0) >>  4) as usize];
-
                 self.pc += 2;
             }
             
@@ -143,7 +142,6 @@ impl Chip8 {
                 //8XY2: set V[X] = (V[X] and V[Y])
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] &=
                     self.register[((self.opcode & 0x00F0) >>  4) as usize];
-
                 self.pc += 2;
             }
             
@@ -151,7 +149,6 @@ impl Chip8 {
                 //8XY3: set V[X] = (V[X] xor V[Y])
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] ^= 
                     self.register[((self.opcode & 0x00F0) >>  4) as usize];
-
                 self.pc += 2;
             }
             
@@ -163,7 +160,16 @@ impl Chip8 {
                     {1} else {0};
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] +=
                     self.register[((self.opcode & 0x00F0) >> 4) as usize];
-
+                self.pc += 2;
+            }
+            
+            0x0005 => {
+                //8XY5: set V[X] -= V[Y], if borrow set V[F] = 0, else set V[F] = 1
+                self.register[15] =
+                    if self.register[((self.opcode & 0x00F0) >> 4) as usize] >
+                        self.register[((self.opcode & 0x0F00) >> 8) as usize]
+                    {0} else {0};
+                self.register[((self.opcode & 0x0F00) >> 8) as usize] -= self.register[((self.opcode & 0x00F0) >> 4) as usize];
                 self.pc += 2;
             }
             
@@ -174,6 +180,24 @@ impl Chip8 {
                 self.pc += 2;
             }
             
+            0x0007 => {
+                //8XY7: set V[X] = (V[Y] - V[X]), if borrow set V[F] = 0, else set V[F] = 1
+                self.register[15] =
+                    if self.register[((self.opcode & 0x0F00) >> 8) as usize] >
+                        self.register[((self.opcode & 0x00F0) >> 4) as usize]
+                    {1} else {0};
+                self.register[((self.opcode & 0x0F00) >> 8) as usize] =
+                    (self.register[((self.opcode & 0x00F0) >> 4) as usize] - self.register[((self.opcode & 0x0F00) >> 8) as usize]);
+                self.pc += 2;
+            }
+            
+            0x000E => {
+                //8XYE: set V[F] to MSB of V[Y], set V[X] = (V[Y] << 1)
+                self.register[15] = self.register[((self.opcode & 0x00F0) >> 4) as usize] & 0x1000000000000000;
+                self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register[((self.opcode & 0x00F0) >> 4) as usize] << 1;
+                self.pc += 2;
+            
+            }
             _ => {
                 println!("opcode: {:X},not implemented yet", self.opcode);
                 self.pc += 2;
