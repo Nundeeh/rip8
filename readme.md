@@ -7,14 +7,13 @@ Written in rust.
 
 
 not implemented yet:
-0NNN
-00E0
-00EE
-CXNN
-DXYN
-EX9E
-EXA1
-FX07
-FX0A
-FX29
+0NNN -> Call
+00E0 -> Display
+00EE -> Return
+CXNN -> Random
+DXYN -> Display
+EX9E -> Key
+EXA1 -> Key
+FX0A -> Key
+FX29 -> Display
 FX33
