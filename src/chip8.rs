@@ -7,6 +7,8 @@ pub struct Chip8 {
     stack: [u16; 16],
     sp: u16,
     opcode: u16,
+    delay_timer: u8,
+    sound_timer: u8,
 }
 
 impl Chip8 {
@@ -26,6 +28,8 @@ impl Chip8 {
             stack: [0; 16],
             sp: 0,
             opcode: 0,
+            delay_timer: 0,
+            sound_timer: 0,
         }
     }
     
@@ -239,6 +243,23 @@ impl Chip8 {
     
     fn op_Fxxx(&mut self) {
         match self.opcode & 0x00FF {
+            0x0007 => {
+                //FX07:set V[X] to delay_timer
+                self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.delay_timer;
+                self.pc += 2;
+            }
+            
+            0x0015 => {
+                //FX15: set delay_timer to V[X]
+                self.delay_timer = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u8;
+                self.pc += 2;
+            }
+            
+            0x0018 => {
+                //FX18: set sound_timer to V[X]
+                self.sound_timer = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u8;
+                self.pc += 2;
+            }
             0x001E => {
                 //FX1E: add V[X] to I
                 self.index += self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
