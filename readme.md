@@ -6,13 +6,25 @@ Written in rust.
 (Will probably never be completed)
 
 
-not implemented yet:
-0NNN -> Call
+Not implemented yet:
+
 00E0 -> Display
-00EE -> Return
+
 CXNN -> Random
+
 DXYN -> Display
+
 EX9E -> Key
+
 EXA1 -> Key
+
 FX0A -> Key
+
 FX29 -> Display
+
+
+Only used by old systems:
+
+0NNN
+
+00EE
