@@ -56,10 +56,10 @@ impl Chip8 {
             0x7000 => self.op_7xxx(),
             0x8000 => self.op_8xxx(),
             0x9000 => self.op_9xxx(),
-            0xA000 => self.op_Axxx(),
-            0xB000 => self.op_Bxxx(),
-            0xD000 => self.op_Dxxx(),
-            0xF000 => self.op_Fxxx(),
+            0xA000 => self.op_axxx(),
+            0xB000 => self.op_bxxx(),
+            0xD000 => self.op_dxxx(),
+            0xF000 => self.op_fxxx(),
             _ => {
                 println!("opcode: {:X},not implemented yet", self.opcode);
                 self.pc += 2;
@@ -172,7 +172,7 @@ impl Chip8 {
                 self.register[15] =
                     if self.register[((self.opcode & 0x00F0) >> 4) as usize] >
                         self.register[((self.opcode & 0x0F00) >> 8) as usize]
-                    {0} else {0};
+                    {1} else {0};
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] -= self.register[((self.opcode & 0x00F0) >> 4) as usize];
                 self.pc += 2;
             }
@@ -191,7 +191,7 @@ impl Chip8 {
                         self.register[((self.opcode & 0x00F0) >> 4) as usize]
                     {1} else {0};
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] =
-                    (self.register[((self.opcode & 0x00F0) >> 4) as usize] - self.register[((self.opcode & 0x0F00) >> 8) as usize]);
+                    self.register[((self.opcode & 0x00F0) >> 4) as usize] - self.register[((self.opcode & 0x0F00) >> 8) as usize];
                 self.pc += 2;
             }
             
@@ -223,25 +223,25 @@ impl Chip8 {
         }
     }
     
-    fn op_Axxx(&mut self) {
+    fn op_axxx(&mut self) {
         //ANNN: sets the index to the adress NNN
         self.index = self.opcode & 0x0FFF;
         self.pc += 2;
     }
     
-    fn op_Bxxx(&mut self) {
+    fn op_bxxx(&mut self) {
         //BNNN: jump to the address V[0] + NNN
         self.pc = self.register[0] as u16 + self.opcode & 0x0FFF;
     }
     
-    fn op_Dxxx(&mut self) {
+    fn op_dxxx(&mut self) {
         //Waiting with the drawing stuff until later, just increase pc for now
         println!("opcode: {:X}, not implemented yet", self.opcode);
         self.pc += 2;
     }
     
     
-    fn op_Fxxx(&mut self) {
+    fn op_fxxx(&mut self) {
         match self.opcode & 0x00FF {
             0x0007 => {
                 //FX07:set V[X] to delay_timer
@@ -263,6 +263,14 @@ impl Chip8 {
             0x001E => {
                 //FX1E: add V[X] to I
                 self.index += self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
+                self.pc += 2;
+            }
+            
+            0x0033 => {
+                //FX33: store V[X] in deciaml in memory as following: M[I] = V[X](3), M[I+1] = V[X](2), M[I+2] = V[X](1)
+                self.memory[self.index as usize] = (self.register[((self.opcode & 0x0F00) >> 8) as usize] & 0x3) >> 2;
+                self.memory[(self.index + 1) as usize] = (self.register[((self.opcode & 0x0F00) >> 8) as usize] & 0x2) >> 1;
+                self.memory[(self.index + 2) as usize] = self.register[((self.opcode & 0x0F00) >> 8) as usize] & 0x1;
                 self.pc += 2;
             }
             
