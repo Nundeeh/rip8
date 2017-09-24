@@ -1,3 +1,5 @@
+extern crate rand;
+
 pub struct Chip8 {
     memory: [u8; 4096],
     register: [u8; 16],
@@ -58,6 +60,7 @@ impl Chip8 {
             0x9000 => self.op_9xxx(),
             0xA000 => self.op_axxx(),
             0xB000 => self.op_bxxx(),
+            0xC000 => self.op_cxxx(),
             0xD000 => self.op_dxxx(),
             0xF000 => self.op_fxxx(),
             _ => {
@@ -232,6 +235,12 @@ impl Chip8 {
     fn op_bxxx(&mut self) {
         //BNNN: jump to the address V[0] + NNN
         self.pc = self.register[0] as u16 + self.opcode & 0x0FFF;
+    }
+    
+    fn op_cxxx(&mut self) {
+        //CXNN: set V[X] to random u8 and NN
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] = rand::random::<(u8)>() & self.register[(self.opcode & 0x00FF) as usize];
+        self.pc += 2;
     }
     
     fn op_dxxx(&mut self) {

@@ -10,8 +10,6 @@ Not implemented yet:
 
 00E0 -> Display
 
-CXNN -> Random
-
 DXYN -> Display
 
 EX9E -> Key
