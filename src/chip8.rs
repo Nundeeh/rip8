@@ -276,10 +276,10 @@ impl Chip8 {
             }
             
             0x0033 => {
-                //FX33: store V[X] in deciaml in memory as following: M[I] = V[X](3), M[I+1] = V[X](2), M[I+2] = V[X](1)
-                self.memory[self.index as usize] = (self.register[((self.opcode & 0x0F00) >> 8) as usize] & 0x3) >> 2;
-                self.memory[(self.index + 1) as usize] = (self.register[((self.opcode & 0x0F00) >> 8) as usize] & 0x2) >> 1;
-                self.memory[(self.index + 2) as usize] = self.register[((self.opcode & 0x0F00) >> 8) as usize] & 0x1;
+                //FX33: store the BCD of V[X] in memory as following: M[I] = V[X](3), M[I+1] = V[X](2), M[I+2] = V[X](1)
+                self.memory[self.index as usize] = self.register[((self.opcode & 0x0F00) >> 8) as usize] / 100;
+                self.memory[(self.index + 1) as usize] = (self.register[((self.opcode & 0x0F00) >> 8) as usize] % 100) / 10;
+                self.memory[(self.index + 2) as usize] = self.register[((self.opcode & 0x0F00) >> 8) as usize] % 10;
                 self.pc += 2;
             }
             
