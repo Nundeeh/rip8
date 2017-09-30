@@ -11,7 +11,27 @@ pub struct Chip8 {
     opcode: u16,
     delay_timer: u8,
     sound_timer: u8,
+    draw_flag: bool,
 }
+
+const FONT_SET:  [u8; 80] = [
+    0xF0,0x90,0x90,0x90,0xF0, //0
+    0x20,0x60,0x20,0x20,0x70, //1
+    0xF0,0x10,0xF0,0x80,0xF0, //2
+    0xF0,0x10,0xF0,0x10,0xF0, //3
+    0x90,0x90,0xF0,0x10,0x10, //4
+    0xF0,0x80,0xF0,0x10,0xF0, //5
+    0xF0,0x80,0xF0,0x90,0xF0, //6
+    0xF0,0x10,0x20,0x40,0x40, //7
+    0xF0,0x90,0xF0,0x90,0xF0, //8
+    0xF0,0x90,0xF0,0x10,0xF0, //9
+    0xF0,0x90,0xF0,0x90,0x90, //A
+    0xE0,0x90,0xE0,0x90,0xE0, //B
+    0xF0,0x80,0x80,0x80,0xF0, //C
+    0xE0,0x90,0x90,0x90,0xE0, //D
+    0xF0,0x80,0xF0,0x80,0xF0, //E
+    0xF0,0x80,0xF0,0x80,0x80, //F
+    ];
 
 impl Chip8 {
     pub fn new(op_code: Vec<u8>) ->  Chip8 {
@@ -19,6 +39,10 @@ impl Chip8 {
         
         for (i, byte) in op_code.iter().enumerate() {
             memory[0x200 + i] = byte.clone();
+        }
+
+        for (i, byte) in FONT_SET.iter().enumerate() {
+            memory[i]  = byte.clone();
         }
 
         Chip8 {
@@ -32,11 +56,12 @@ impl Chip8 {
             opcode: 0,
             delay_timer: 0,
             sound_timer: 0,
+            draw_flag: false,
         }
     }
     
     pub fn run_cycle(&mut self) {
-        for x in 0..30 {
+        for _ in 0..30 {
             self.fetch_opcode();
             self.run_opcode();
         }
@@ -201,7 +226,7 @@ impl Chip8 {
             0x000E => {
                 //8XYE: set V[F] to MSB of V[Y], set V[X] = (V[Y] << 1)
                 self.register[15] =
-                    if  (self.register[((self.opcode & 0x00F0) >> 4) as usize] & 0x8000) > 0
+                    if  (self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16 & 0x8000 as u16) > 0
                     {1} else {0};
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register[((self.opcode & 0x00F0) >> 4) as usize] << 1;
                 self.pc += 2;
