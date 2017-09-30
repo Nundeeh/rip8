@@ -299,7 +299,14 @@ impl Chip8 {
                 self.index += self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
                 self.pc += 2;
             }
-            
+
+            0x0029 => {
+                //FX29: set I to the location ofthe sprite for the character in V[X]
+                let sprite: u8 = self.register[((self.opcode & 0x0F00) >> 8) as usize];
+                self.index = (sprite *5) as u16;
+                self.pc += 2;
+            }
+
             0x0033 => {
                 //FX33: store the BCD of V[X] in memory as following: M[I] = V[X](3), M[I+1] = V[X](2), M[I+2] = V[X](1)
                 self.memory[self.index as usize] = self.register[((self.opcode & 0x0F00) >> 8) as usize] / 100;
