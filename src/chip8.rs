@@ -269,8 +269,29 @@ impl Chip8 {
     }
     
     fn op_dxxx(&mut self) {
-        //Waiting with the drawing stuff until later, just increase pc for now !!!
-        println!("opcode: {:X}, not implemented yet", self.opcode);
+        //DXYN: draw sprite at coordinate (V[X],V[Y]) 
+        //      with a width of 8 pixels and a hight of N pixels
+        let x = (self.opcode & 0x0F00) >> 8;
+        let y = (self.opcode & 0x00F0) >> 4;
+        let hight = self.opcode & 0x000F;
+        let mut font_row: u8;
+
+        self.register[15] = 0;
+
+        for row in 0..hight {
+            font_row = self.memory[(self.index + row) as usize];
+
+            for column in 0..8 {
+                //this checks for every column/pixel in this row if it equals 0
+                if font_row & (0x80 >> column) != 0 {
+                    if self.display[(x + column + ((y + row) * 64)) as usize] == 1 {
+                        self.register[15] = 1;
+                    }
+                    self.display[(x + column + ((y + row) * 64)) as usize] ^= 1;
+                }
+            }
+        }
+        self.draw_flag = true;
         self.pc += 2;
     }
     
