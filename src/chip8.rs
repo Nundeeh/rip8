@@ -5,7 +5,7 @@ pub struct Chip8 {
     register: [u8; 16],
     index: u16,
     pc: u16,
-    display: [u8; 30*64],
+    display: [bool; 30*64],
     stack: [u16; 16],
     sp: u16,
     opcode: u16,
@@ -50,7 +50,7 @@ impl Chip8 {
             register: [0; 16],
             index: 0,
             pc: 0x200,
-            display: [0; 30*64],
+            display: [false; 30*64],
             stack: [0; 16],
             sp: 0,
             opcode: 0,
@@ -60,10 +60,13 @@ impl Chip8 {
         }
     }
     
-    pub fn run_cycle(&mut self) {
-        for _ in 0..30 {
+    pub fn run(&mut self) {
+        loop {
             self.fetch_opcode();
             self.run_opcode();
+            if self.draw_flag {
+                //draw 
+            }
         }
     }
     
@@ -74,6 +77,7 @@ impl Chip8 {
     
     fn run_opcode(&mut self) {
         match self.opcode & 0xF000 {
+            0x0000 => self.op_0xxx(),
             0x1000 => self.op_1xxx(),
             0x2000 => self.op_2xxx(),
             0x3000 => self.op_3xxx(),
@@ -95,6 +99,32 @@ impl Chip8 {
         }
     }
  
+    fn op_0xxx(&mut self) {
+        match self.opcode & 0xFF00 {
+            0x0000 => self.op_00xx(),
+            _ => {
+                println!("{} not implemented yet!!!", self.opcode);
+                self.pc += 2;
+            }
+            
+        }
+    }
+
+    fn op_00xx(&mut self) {
+        match self.opcode & 0x00FF {
+            0x00E0 => {
+                self.display = [false; 30*64];
+                self.pc += 2;
+            }
+            
+            _ => {
+                println!("{} not implemented yet!!!", self.opcode);
+                self.pc += 2;
+            }
+
+        }
+    }
+
     fn op_1xxx(&mut self) {
         //1NNN: Jump to the address NNN
         self.pc = self.opcode & 0x0FFF;
@@ -284,10 +314,10 @@ impl Chip8 {
             for column in 0..8 {
                 //this checks for every column/pixel in this row if it equals 0
                 if font_row & (0x80 >> column) != 0 {
-                    if self.display[(x + column + ((y + row) * 64)) as usize] == 1 {
+                    if self.display[(x + column + ((y + row) * 64)) as usize] == true {
                         self.register[15] = 1;
                     }
-                    self.display[(x + column + ((y + row) * 64)) as usize] ^= 1;
+                    self.display[(x + column + ((y + row) * 64)) as usize] ^= true;
                 }
             }
         }
