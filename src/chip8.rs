@@ -5,13 +5,13 @@ pub struct Chip8 {
     register: [u8; 16],
     index: u16,
     pc: u16,
-    display: [bool; 30*64],
+    pub display: [bool; 30*64],
     stack: [u16; 16],
     sp: u16,
     opcode: u16,
     delay_timer: u8,
     sound_timer: u8,
-    draw_flag: bool,
+    pub draw_flag: bool,
 }
 
 const FONT_SET:  [u8; 80] = [
@@ -60,14 +60,9 @@ impl Chip8 {
         }
     }
     
-    pub fn run(&mut self) {
-        loop {
+    pub fn run_cycle(&mut self) {
             self.fetch_opcode();
             self.run_opcode();
-            if self.draw_flag {
-                //draw 
-            }
-        }
     }
     
     fn fetch_opcode(&mut self) {
@@ -106,7 +101,6 @@ impl Chip8 {
                 println!("{} not implemented yet!!!", self.opcode);
                 self.pc += 2;
             }
-            
         }
     }
 
