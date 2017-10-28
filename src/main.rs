@@ -24,7 +24,7 @@ fn main() {
     let path: String = env::args().nth(1).unwrap(); 
     let rom = read_rom(path);
     
-    let mut chip8 = Chip8::new(rom);
+    let mut chip8 = Chip8::new(rom, false);
     let mut display = Display::new();
 
     let mut event_pump = display.sdl_context.event_pump().unwrap();

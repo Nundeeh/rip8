@@ -5,7 +5,7 @@ pub struct Chip8 {
     register: [u8; 16],
     index: u16,
     pc: u16,
-    pub display: [bool; 30*64],
+    pub display: [bool; 64*32],
     stack: [u16; 16],
     sp: u16,
     opcode: u16,
@@ -34,15 +34,31 @@ const FONT_SET:  [u8; 80] = [
     ];
 
 impl Chip8 {
-    pub fn new(op_code: Vec<u8>) ->  Chip8 {
+    pub fn new(op_code: Vec<u8>, is_test: bool) ->  Chip8 {
         let mut memory: [u8; 4096] = [0; 4096];
         
-        for (i, byte) in op_code.iter().enumerate() {
-            memory[0x200 + i] = byte.clone();
-        }
+        if !is_test {
+            for (i, byte) in op_code.iter().enumerate() {
+                memory[0x200 + i] = byte.clone();
+            }
 
-        for (i, byte) in FONT_SET.iter().enumerate() {
-            memory[i]  = byte.clone();
+            for (i, byte) in FONT_SET.iter().enumerate() {
+                memory[i]  = byte.clone();
+            }
+        }
+        else {
+           for (i, byte) in FONT_SET.iter().enumerate() {
+               memory[i]  = byte.clone();
+           }
+
+           memory[0x200 ] = 0xD1;
+           memory[0x200 + 1] = 0x25;
+           memory[0x200 + 2] = 0xA0;
+           memory[0x200 + 3] = 0x05;
+           memory[0x200 + 4] = 0x61;
+           memory[0x200 + 5] = 0x05;
+           memory[0x200 + 6] = 0xD1;
+           memory[0x200 + 7] = 0x25;
         }
 
         Chip8 {
@@ -50,7 +66,7 @@ impl Chip8 {
             register: [0; 16],
             index: 0,
             pc: 0x200,
-            display: [false; 30*64],
+            display: [false; 64*32],
             stack: [0; 16],
             sp: 0,
             opcode: 0,
@@ -62,7 +78,21 @@ impl Chip8 {
     
     pub fn run_cycle(&mut self) {
             self.fetch_opcode();
-            self.run_opcode();
+            if self.opcode != 0 {
+                println!("V[1]: {}, V[2]: {}", self.register[1],self.register[2]);
+                if self.draw_flag {
+                    let mut i = 0;
+                    while i < 64*32 {
+                        if self.display[i] == true {
+                            println!("display=true at: {}", i) 
+                        }
+                        i += 1;
+                    }
+                    self.draw_flag = false;
+                }
+                println!("Executed {:X}!", self.opcode);
+                self.run_opcode();
+            }
     }
     
     fn fetch_opcode(&mut self) {
@@ -107,7 +137,7 @@ impl Chip8 {
     fn op_00xx(&mut self) {
         match self.opcode & 0x00FF {
             0x00E0 => {
-                self.display = [false; 30*64];
+                self.display = [false; 64*32];
                 self.pc += 2;
             }
             
@@ -295,8 +325,8 @@ impl Chip8 {
     fn op_dxxx(&mut self) {
         //DXYN: draw sprite at coordinate (V[X],V[Y]) 
         //      with a width of 8 pixels and a hight of N pixels
-        let x = (self.opcode & 0x0F00) >> 8;
-        let y = (self.opcode & 0x00F0) >> 4;
+        let x = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
+        let y = self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16;
         let hight = self.opcode & 0x000F;
         let mut font_row: u8;
 
@@ -316,7 +346,7 @@ impl Chip8 {
             }
         }
         self.draw_flag = true;
-        self.pc += 2;
+        self.pc +=2;
     }
     
     
