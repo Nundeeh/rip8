@@ -219,7 +219,8 @@ impl Chip8 {
         match self.opcode & 0x000F {
             0x0000 => {
                 //8XY0: set V[X] = V[Y]
-                self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register[((self.opcode & 0x00F0) >> 4) as usize];
+                self.register[((self.opcode & 0x0F00) >> 8) as usize] =
+                    self.register[((self.opcode & 0x00F0) >> 4) as usize];
                 self.pc += 2;
             } 
             
@@ -261,14 +262,16 @@ impl Chip8 {
                     if self.register[((self.opcode & 0x00F0) >> 4) as usize] >
                         self.register[((self.opcode & 0x0F00) >> 8) as usize]
                     {1} else {0};
-                self.register[((self.opcode & 0x0F00) >> 8) as usize] -= self.register[((self.opcode & 0x00F0) >> 4) as usize];
+                self.register[((self.opcode & 0x0F00) >> 8) as usize] -=
+                    self.register[((self.opcode & 0x00F0) >> 4) as usize];
                 self.pc += 2;
             }
             
             0x0006 => {
                 //8XY6: set V[F] to LSB of V[Y], set V[X] = (V[Y] >> 1)
                 self.register[15] = self.register[((self.opcode & 0x00F0) >> 4) as usize] & 0x1;
-                self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register[((self.opcode & 0x00F0) >> 4) as usize] >> 1;
+                self.register[((self.opcode & 0x0F00) >> 8) as usize] =
+                    self.register[((self.opcode & 0x00F0) >> 4) as usize] >> 1;
                 self.pc += 2;
             }
             
@@ -279,16 +282,22 @@ impl Chip8 {
                         self.register[((self.opcode & 0x00F0) >> 4) as usize]
                     {1} else {0};
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] =
-                    self.register[((self.opcode & 0x00F0) >> 4) as usize] - self.register[((self.opcode & 0x0F00) >> 8) as usize];
+                    self.register[((self.opcode & 0x00F0) >> 4) as usize] -
+                        self.register[((self.opcode & 0x0F00) >> 8) as usize];
                 self.pc += 2;
             }
             
             0x000E => {
                 //8XYE: set V[F] to MSB of V[Y], set V[X] = (V[Y] << 1)
                 self.register[15] =
+<<<<<<< HEAD
                     if  (self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16 & 0x8000 as u16) > 0
+=======
+                    if  (self.register[((self.opcode & 0x00F0) >> 4) as usize] & 0x80) > 0
+>>>>>>> 6622203a694bab1e814f9ba322d0e392976f5006
                     {1} else {0};
-                self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register[((self.opcode & 0x00F0) >> 4) as usize] << 1;
+                self.register[((self.opcode & 0x0F00) >> 8) as usize] =
+                    self.register[((self.opcode & 0x00F0) >> 4) as usize] << 1;
                 self.pc += 2;
             
             }
@@ -302,7 +311,7 @@ impl Chip8 {
     fn op_9xxx(&mut self) {
         //9XY0: skip the next instruction if V[X] != V[Y]
         let x: u16 = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
-        let y: u16 = self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16; 
+        let y: u16 = self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16;
         if x != y {
             self.pc += 4;
         }
@@ -324,7 +333,8 @@ impl Chip8 {
     
     fn op_cxxx(&mut self) {
         //CXNN: set V[X] to random u8 and NN
-        self.register[((self.opcode & 0x0F00) >> 8) as usize] = rand::random::<(u8)>() & self.register[(self.opcode & 0x00FF) as usize];
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] =
+        rand::random::<(u8)>() & self.register[(self.opcode & 0x00FF) as usize];
         self.pc += 2;
     }
     
@@ -389,10 +399,14 @@ impl Chip8 {
             }
 
             0x0033 => {
-                //FX33: store the BCD of V[X] in memory as following: M[I] = V[X](3), M[I+1] = V[X](2), M[I+2] = V[X](1)
-                self.memory[self.index as usize] = self.register[((self.opcode & 0x0F00) >> 8) as usize] / 100;
-                self.memory[(self.index + 1) as usize] = (self.register[((self.opcode & 0x0F00) >> 8) as usize] % 100) / 10;
-                self.memory[(self.index + 2) as usize] = self.register[((self.opcode & 0x0F00) >> 8) as usize] % 10;
+                //FX33: store the BCD of V[X] in memory as following:
+                //M[I] = V[X](3), M[I+1] = V[X](2), M[I+2] = V[X](1)
+                self.memory[self.index as usize] =
+                    self.register[((self.opcode & 0x0F00) >> 8) as usize] / 100;
+                self.memory[(self.index + 1) as usize] =
+                    (self.register[((self.opcode & 0x0F00) >> 8) as usize] % 100) / 10;
+                self.memory[(self.index + 2) as usize] =
+                    self.register[((self.opcode & 0x0F00) >> 8) as usize] % 10;
                 self.pc += 2;
             }
             
