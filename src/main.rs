@@ -39,6 +39,11 @@ fn main() {
                 _ => {}
             } 
         }
+
+        let mut keys = HashSet::new();
+        keys = event_pump.keyboard_state().pressed_scancodes().filter_map(Keycode::from_scancode).collect();
+        println!("{:?}", keys);
+
         chip8.run_cycle();
         if chip8.draw_flag {
             display.render(chip8.display);

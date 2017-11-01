@@ -137,12 +137,18 @@ impl Chip8 {
     fn op_00xx(&mut self) {
         match self.opcode & 0x00FF {
             0x00E0 => {
+                //00E0: clear the display
                 self.display = [false; 64*32];
                 self.pc += 2;
             }
             
+            0x00EE => {
+                //00EE: return from subroutine
+                self.sp -= 1;
+                self.pc = self.stack[(self.sp) as usize];
+            }
             _ => {
-                println!("{} not implemented yet!!!", self.opcode);
+                println!("{:X} not implemented yet!!!", self.opcode);
                 self.pc += 2;
             }
 
