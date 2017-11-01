@@ -290,11 +290,7 @@ impl Chip8 {
             0x000E => {
                 //8XYE: set V[F] to MSB of V[Y], set V[X] = (V[Y] << 1)
                 self.register[15] =
-<<<<<<< HEAD
                     if  (self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16 & 0x8000 as u16) > 0
-=======
-                    if  (self.register[((self.opcode & 0x00F0) >> 4) as usize] & 0x80) > 0
->>>>>>> 6622203a694bab1e814f9ba322d0e392976f5006
                     {1} else {0};
                 self.register[((self.opcode & 0x0F00) >> 8) as usize] =
                     self.register[((self.opcode & 0x00F0) >> 4) as usize] << 1;
