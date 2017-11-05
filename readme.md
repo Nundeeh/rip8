@@ -8,21 +8,4 @@ Written in rust.
 
 Not implemented yet:
 
-00E0 -> Display
-
-DXYN -> Display
-
-EX9E -> Key
-
-EXA1 -> Key
-
-FX0A -> Key
-
-FX29 -> Display
-
-
-Only used by old systems:
-
-0NNN
-
-00EE
+0NNN -> RCA 1802
