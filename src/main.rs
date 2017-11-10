@@ -33,7 +33,6 @@ fn main() {
     let mut key = 0x10;
     let mut old_key = 0x10;
     'main: loop {
-        key = 0x10;
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit{..} | Event::KeyDown {keycode: Some(Keycode::Escape), ..} => {
@@ -55,13 +54,31 @@ fn main() {
                 Event::KeyDown {keycode: Some(Keycode::X), ..} => {key = 0x0D;},
                 Event::KeyDown {keycode: Some(Keycode::C), ..} => {key = 0x0E;},
                 Event::KeyDown {keycode: Some(Keycode::V), ..} => {key = 0x0F;},
+                Event::KeyUp {keycode: Some(Keycode::Num1), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::Num2), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::Num3), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::Num4), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::Q), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::W), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::E), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::R), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::A), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::S), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::D), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::F), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::Y), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::X), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::C), ..} => {key = 0x10;},
+                Event::KeyUp {keycode: Some(Keycode::V), ..} => {key = 0x10;},
                 _ => {}
             }
         }
-        chip8.run_cycle(key, &mut event_pump);
+        chip8.run_cycle(old_key, &mut event_pump);
         if chip8.draw_flag {
             display.render(chip8.display);
         }
-        old_key = key;
+        if key != old_key {
+            old_key = key;
+        }
     }
 }

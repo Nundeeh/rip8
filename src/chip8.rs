@@ -83,19 +83,22 @@ impl Chip8 {
     pub fn run_cycle(&mut self, key: u8, event_pump: &mut sdl2::EventPump) {
             self.fetch_opcode();
             if self.opcode != 0 {
-                println!("V[1]: {}, V[2]: {}", self.register[1],self.register[2]);
+                //println!("V[1]: {}, V[2]: {}", self.register[1],self.register[2]);
                 if self.draw_flag {
                     let mut i = 0;
                     while i < 64*32 {
                         if self.display[i] == true {
-                            println!("display=true at: {}", i) 
+                            //println!("display=true at: {}", i) 
                         }
                         i += 1;
                     }
                     self.draw_flag = false;
                 }
-                println!("Executed {:X}!", self.opcode);
+                println!("{:X} {}", self.opcode, self.delay_timer);
                 self.run_opcode(key, event_pump);
+                if self.delay_timer != 0 {
+                    self.delay_timer -= 1;
+                }
             }
     }
     
@@ -151,6 +154,7 @@ impl Chip8 {
                 //00EE: return from subroutine
                 self.sp -= 1;
                 self.pc = self.stack[(self.sp) as usize];
+                self.pc += 2;
             }
             _ => {
                 println!("{:X} not implemented yet!!!", self.opcode);
@@ -252,23 +256,29 @@ impl Chip8 {
             
             0x0004 => {
                 //8XY4: add V[Y] to V[X], if carry set V[F] = 1, if no carry set V[F] = 0
-                self.register[15] =
-                    if self.register[((self.opcode & 0x00F0) >> 4) as usize] >
-                       (0xFF - self.register[((self.opcode & 0x0F00) >> 8) as usize])
-                    {1} else {0};
-                self.register[((self.opcode & 0x0F00) >> 8) as usize] +=
-                    self.register[((self.opcode & 0x00F0) >> 4) as usize];
+                let x = (self.opcode & 0x0F00) >> 8;
+                let y = (self.opcode & 0x00F0) >> 4;
+                self.register[15] = 0;
+                let sum = self.register[x as usize] as u16 + self.register[y as usize] as u16;
+                if sum > 0xFF {
+                    self.register[15] = 1;
+                }
+                self.register[x as usize] = sum as u8;
                 self.pc += 2;
             }
             
             0x0005 => {
                 //8XY5: set V[X] -= V[Y], if borrow set V[F] = 0, else set V[F] = 1
-                self.register[15] =
-                    if self.register[((self.opcode & 0x00F0) >> 4) as usize] >
-                        self.register[((self.opcode & 0x0F00) >> 8) as usize]
-                    {1} else {0};
-                self.register[((self.opcode & 0x0F00) >> 8) as usize] -=
-                    self.register[((self.opcode & 0x00F0) >> 4) as usize];
+                let x = (self.opcode & 0x0F00) >> 8;
+                let y = (self.opcode & 0x00F0) >> 4;
+                self.register[15] = 1;
+                if self.register[y as usize] > self.register[x as usize] {
+                    self.register[15] = 0;
+                    self.register[x as usize] = 0;
+                }
+                else {
+                    self.register[x as usize] = self.register[x as usize] - self.register[y as usize];
+                }
                 self.pc += 2;
             }
             
@@ -334,8 +344,9 @@ impl Chip8 {
     
     fn op_cxxx(&mut self) {
         //CXNN: set V[X] to random u8 and NN
-        self.register[((self.opcode & 0x0F00) >> 8) as usize] =
-        rand::random::<(u8)>() & self.register[(self.opcode & 0x00FF) as usize];
+        let r = rand::random::<(u8)>();
+        let n = (self.opcode & 0x00FF) as u8;
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] = r & n;
         self.pc += 2;
     }
     
@@ -370,7 +381,8 @@ impl Chip8 {
         match self.opcode & 0x00FF {
             0x009E => {
                 //EX9A: skip instruction if pressed key == V[X]
-                if self.register[((self.opcode & 0x0F00) >> 8) as usize] == key {
+                let x = self.register[((self.opcode & 0x0F00) >> 8) as usize];
+                if x == key {
                     self.pc += 4;
                 }
                 else {
@@ -379,7 +391,8 @@ impl Chip8 {
             }
             0x00A1 => {
                 //EXA1: skip instruction if pressed key != V[X]
-                if self.register[((self.opcode & 0x0F00) >> 8) as usize] != key {
+                let x = self.register[((self.opcode & 0x0F00) >> 8) as usize];
+                if x != key {
                     self.pc += 4;
                 }
                 else {
