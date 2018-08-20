@@ -5,6 +5,8 @@ Written in rust.
 
 (Will probably never be completed)
 
+Some stuff is broken and the code is a mess. I will rewrite this eventually ...
+
 
 Not implemented yet:
 
