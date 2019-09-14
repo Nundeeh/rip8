@@ -2,7 +2,8 @@ extern crate rand;
 extern crate sdl2;
 
 use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
+
+use KEY_CODES_DOWN;
 
 pub struct Chip8 {
     memory: [u8; 4096],
@@ -418,120 +419,19 @@ impl Chip8 {
                 //FX0A: wait for key press, store key in V[X]
                 'fx0a: loop {
                     for event in event_pump.poll_iter() {
-                        match event {
-                            Event::KeyDown {
-                                keycode: Some(Keycode::Num1),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x00;
-                                break 'fx0a;
+                        for (keycode, new_key) in &KEY_CODES_DOWN {
+                            match event {
+                                Event::KeyDown {
+                                    keycode: Some(k), ..
+                                } => {
+                                    if k == *keycode {
+                                        self.register[((self.opcode & 0x0F00) >> 8) as usize] =
+                                            *new_key;
+                                        break 'fx0a;
+                                    }
+                                }
+                                _ => (),
                             }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::Num2),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x01;
-                                break 'fx0a;
-                            }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::Num3),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x02;
-                                break 'fx0a;
-                            }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::Num4),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x03;
-                                break 'fx0a;
-                            }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::Q),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x04;
-                                break 'fx0a;
-                            }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::W),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x05;
-                                break 'fx0a;
-                            }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::E),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x06;
-                                break 'fx0a;
-                            }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::R),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x07;
-                                break 'fx0a;
-                            }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::A),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x08;
-                                break 'fx0a;
-                            }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::S),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x09;
-                                break 'fx0a;
-                            }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::D),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x0A;
-                                break 'fx0a;
-                            }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::F),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x0B;
-                                break 'fx0a;
-                            }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::Y),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x0C;
-                                break 'fx0a;
-                            }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::X),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x0D;
-                                break 'fx0a;
-                            }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::C),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x0E;
-                                break 'fx0a;
-                            }
-                            Event::KeyDown {
-                                keycode: Some(Keycode::V),
-                                ..
-                            } => {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = 0x0F;
-                                break 'fx0a;
-                            }
-                            _ => {}
                         }
                     }
                 }

@@ -40,199 +40,33 @@ fn main() {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => break 'main,
-                Event::KeyDown {
-                    keycode: Some(Keycode::Num1),
-                    ..
-                } => {
-                    key = 0x00;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::Num2),
-                    ..
-                } => {
-                    key = 0x01;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::Num3),
-                    ..
-                } => {
-                    key = 0x02;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::Num4),
-                    ..
-                } => {
-                    key = 0x03;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::Q),
-                    ..
-                } => {
-                    key = 0x04;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::W),
-                    ..
-                } => {
-                    key = 0x05;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::E),
-                    ..
-                } => {
-                    key = 0x06;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::R),
-                    ..
-                } => {
-                    key = 0x07;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::A),
-                    ..
-                } => {
-                    key = 0x08;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::S),
-                    ..
-                } => {
-                    key = 0x09;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::D),
-                    ..
-                } => {
-                    key = 0x0A;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::F),
-                    ..
-                } => {
-                    key = 0x0B;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::Y),
-                    ..
-                } => {
-                    key = 0x0C;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::X),
-                    ..
-                } => {
-                    key = 0x0D;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::C),
-                    ..
-                } => {
-                    key = 0x0E;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::V),
-                    ..
-                } => {
-                    key = 0x0F;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::Num1),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::Num2),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::Num3),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::Num4),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::Q),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::W),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::E),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::R),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::A),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::S),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::D),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::F),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::Y),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::X),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::C),
-                    ..
-                } => {
-                    key = 0x10;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::V),
-                    ..
-                } => {
-                    key = 0x10;
-                }
                 _ => {}
+            }
+            for (keycode, new_key) in &KEY_CODES_DOWN {
+                match event {
+                    Event::KeyDown {
+                        keycode: Some(k), ..
+                    } => {
+                        if k == *keycode {
+                            key = *new_key;
+                            break;
+                        }
+                    }
+                    _ => (),
+                }
+            }
+            for (keycode, new_key) in &KEY_CODES_UP {
+                match event {
+                    Event::KeyUp {
+                        keycode: Some(k), ..
+                    } => {
+                        if k == *keycode {
+                            key = *new_key;
+                            break;
+                        }
+                    }
+                    _ => (),
+                }
             }
         }
         chip8.run_cycle(old_key, &mut event_pump);
@@ -244,3 +78,41 @@ fn main() {
         }
     }
 }
+
+const KEY_CODES_DOWN: [(Keycode, u8); 16] = [
+    (Keycode::Num1, 0x00),
+    (Keycode::Num2, 0x01),
+    (Keycode::Num3, 0x02),
+    (Keycode::Num4, 0x03),
+    (Keycode::Q, 0x04),
+    (Keycode::W, 0x05),
+    (Keycode::E, 0x06),
+    (Keycode::R, 0x07),
+    (Keycode::A, 0x08),
+    (Keycode::S, 0x09),
+    (Keycode::D, 0x0A),
+    (Keycode::F, 0x0B),
+    (Keycode::Y, 0x0C),
+    (Keycode::X, 0x0D),
+    (Keycode::C, 0x0E),
+    (Keycode::V, 0x0F),
+];
+
+const KEY_CODES_UP: [(Keycode, u8); 16] = [
+    (Keycode::Num1, 0x10),
+    (Keycode::Num2, 0x10),
+    (Keycode::Num3, 0x10),
+    (Keycode::Num4, 0x10),
+    (Keycode::Q, 0x10),
+    (Keycode::W, 0x10),
+    (Keycode::E, 0x10),
+    (Keycode::R, 0x10),
+    (Keycode::A, 0x10),
+    (Keycode::S, 0x10),
+    (Keycode::D, 0x10),
+    (Keycode::F, 0x10),
+    (Keycode::Y, 0x10),
+    (Keycode::X, 0x10),
+    (Keycode::C, 0x10),
+    (Keycode::V, 0x10),
+];
