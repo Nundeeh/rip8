@@ -1,7 +1,5 @@
-extern crate sdl2;
-
-use chip8::Chip8;
-use display::Display;
+use crate::chip8::Chip8;
+use crate::display::Display;
 
 use std::env;
 use std::fs::File;

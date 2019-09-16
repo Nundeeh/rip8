@@ -1,9 +1,9 @@
-extern crate rand;
-extern crate sdl2;
+use rand;
+use sdl2;
 
 use sdl2::event::Event;
 
-use KEY_CODES_DOWN;
+use crate::KEY_CODES_DOWN;
 
 pub struct Chip8 {
     memory: [u8; 4096],

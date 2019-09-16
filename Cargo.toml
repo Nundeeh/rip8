@@ -2,6 +2,7 @@
 name = "rip8"
 version = "0.1.0"
 authors = ["Nundeeh <MichelMoo@web.de>"]
+edition = "2018"
 
 [dependencies]
 sdl2="0.30.0"
