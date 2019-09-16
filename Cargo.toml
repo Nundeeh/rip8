@@ -5,5 +5,5 @@ authors = ["Nundeeh <MichelMoo@web.de>"]
 edition = "2018"
 
 [dependencies]
-sdl2="0.30.0"
-rand="0.3.16"
+sdl2="0.32.2"
+rand="0.7.2"
