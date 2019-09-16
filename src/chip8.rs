@@ -20,22 +20,22 @@ pub struct Chip8 {
 }
 
 const FONT_SET: [u8; 80] = [
-    0xF0, 0x90, 0x90, 0x90, 0xF0, //0
-    0x20, 0x60, 0x20, 0x20, 0x70, //1
-    0xF0, 0x10, 0xF0, 0x80, 0xF0, //2
-    0xF0, 0x10, 0xF0, 0x10, 0xF0, //3
-    0x90, 0x90, 0xF0, 0x10, 0x10, //4
-    0xF0, 0x80, 0xF0, 0x10, 0xF0, //5
-    0xF0, 0x80, 0xF0, 0x90, 0xF0, //6
-    0xF0, 0x10, 0x20, 0x40, 0x40, //7
-    0xF0, 0x90, 0xF0, 0x90, 0xF0, //8
-    0xF0, 0x90, 0xF0, 0x10, 0xF0, //9
-    0xF0, 0x90, 0xF0, 0x90, 0x90, //A
-    0xE0, 0x90, 0xE0, 0x90, 0xE0, //B
-    0xF0, 0x80, 0x80, 0x80, 0xF0, //C
-    0xE0, 0x90, 0x90, 0x90, 0xE0, //D
-    0xF0, 0x80, 0xF0, 0x80, 0xF0, //E
-    0xF0, 0x80, 0xF0, 0x80, 0x80, //F
+    0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+    0x20, 0x60, 0x20, 0x20, 0x70, // 1
+    0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+    0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+    0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+    0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+    0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+    0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+    0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+    0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+    0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+    0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+    0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+    0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+    0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 ];
 
 impl Chip8 {
@@ -164,33 +164,33 @@ impl Chip8 {
         self.pc += 2;
     }
 
+    // 00E0: clear the display
     fn op_00e0(&mut self) {
-        //00E0: clear the display
         self.display = [false; 64 * 32];
         self.pc += 2;
     }
 
+    // 00EE: return from subroutine
     fn op_00ee(&mut self) {
-        //00EE: return from subroutine
         self.sp -= 1;
         self.pc = self.stack[(self.sp) as usize];
         self.pc += 2;
     }
 
+    // 1NNN: Jump to the address NNN
     fn op_1xxx(&mut self) {
-        //1NNN: Jump to the address NNN
         self.pc = self.opcode & 0x0FFF;
     }
 
+    // 2NNN: call subroutine at NNN -> store pc on stack and jump to address NNN
     fn op_2xxx(&mut self) {
-        //2NNN: call subroutine at NNN -> store pc on stack and jump to address NNN
         self.stack[self.sp as usize] = self.pc;
         self.sp += 1;
         self.pc = self.opcode & 0x0FFF;
     }
 
+    // 3XNN: skip next instruction if V[X] == NN
     fn op_3xxx(&mut self) {
-        //3XNN: skip next instruction if V[X] == NN
         let x: u16 = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
         let y: u16 = (self.opcode & 0x00FF) as u16;
         if x == y {
@@ -200,8 +200,8 @@ impl Chip8 {
         }
     }
 
+    // 4XNN: skip the next instruction if V[X] != NN
     fn op_4xxx(&mut self) {
-        //4XNN: skip the next instruction if V[X] != NN
         let x: u16 = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
         let y: u16 = (self.opcode & 0x00FF) as u16;
         if x != y {
@@ -211,8 +211,8 @@ impl Chip8 {
         }
     }
 
+    // 5XY0: skip thenext instruction if V[X] == V[Y]
     fn op_5xxx(&mut self) {
-        //5XY0: skip thenext instruction if V[X] == V[Y]
         let x: u16 = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
         let y: u16 = self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16;
         if x == y {
@@ -222,48 +222,48 @@ impl Chip8 {
         }
     }
 
+    // 6XNN: sets V[X] to NN
     fn op_6xxx(&mut self) {
-        //6XNN: sets V[X] to NN
         self.register[((self.opcode & 0x0F00) >> 8) as usize] = (self.opcode & 0x00FF) as u8;
         self.pc += 2;
     }
 
+    // 7XNN: add NN to V[X]
     fn op_7xxx(&mut self) {
-        //7XNN: add NN to V[X]
         self.register[((self.opcode & 0x0F00) >> 8) as usize] += (self.opcode & 0x00FF) as u8;
         self.pc += 2;
     }
 
+    // 8XY0: set V[X] = V[Y]
     fn op_8xx0(&mut self) {
-        //8XY0: set V[X] = V[Y]
         self.register[((self.opcode & 0x0F00) >> 8) as usize] =
             self.register[((self.opcode & 0x00F0) >> 4) as usize];
         self.pc += 2;
     }
 
+    // 8XY1: set V[X] = (V[X] or V[Y])
     fn op_8xx1(&mut self) {
-        //8XY1: set V[X] = (V[X] or V[Y])
         self.register[((self.opcode & 0x0F00) >> 8) as usize] |=
             self.register[((self.opcode & 0x00F0) >> 4) as usize];
         self.pc += 2;
     }
 
+    // 8XY2: set V[X] = (V[X] and V[Y])
     fn op_8xx2(&mut self) {
-        //8XY2: set V[X] = (V[X] and V[Y])
         self.register[((self.opcode & 0x0F00) >> 8) as usize] &=
             self.register[((self.opcode & 0x00F0) >> 4) as usize];
         self.pc += 2;
     }
 
+    // 8XY3: set V[X] = (V[X] xor V[Y])
     fn op_8xx3(&mut self) {
-        //8XY3: set V[X] = (V[X] xor V[Y])
         self.register[((self.opcode & 0x0F00) >> 8) as usize] ^=
             self.register[((self.opcode & 0x00F0) >> 4) as usize];
         self.pc += 2;
     }
 
+    // 8XY4: add V[Y] to V[X], if carry set V[F] = 1, if no carry set V[F] = 0
     fn op_8xx4(&mut self) {
-        //8XY4: add V[Y] to V[X], if carry set V[F] = 1, if no carry set V[F] = 0
         let x = (self.opcode & 0x0F00) >> 8;
         let y = (self.opcode & 0x00F0) >> 4;
         self.register[15] = 0;
@@ -275,8 +275,8 @@ impl Chip8 {
         self.pc += 2;
     }
 
+    // 8XY5: set V[X] -= V[Y], if borrow set V[F] = 0, else set V[F] = 1
     fn op_8xx5(&mut self) {
-        //8XY5: set V[X] -= V[Y], if borrow set V[F] = 0, else set V[F] = 1
         let x = (self.opcode & 0x0F00) >> 8;
         let y = (self.opcode & 0x00F0) >> 4;
         self.register[15] = 1;
@@ -289,16 +289,16 @@ impl Chip8 {
         self.pc += 2;
     }
 
+    // 8XY6: set V[F] to LSB of V[Y], set V[X] = (V[Y] >> 1)
     fn op_8xx6(&mut self) {
-        //8XY6: set V[F] to LSB of V[Y], set V[X] = (V[Y] >> 1)
         self.register[15] = self.register[((self.opcode & 0x00F0) >> 4) as usize] & 0x1;
         self.register[((self.opcode & 0x0F00) >> 8) as usize] =
             self.register[((self.opcode & 0x00F0) >> 4) as usize] >> 1;
         self.pc += 2;
     }
 
+    // 8XY7: set V[X] = (V[Y] - V[X]), if borrow set V[F] = 0, else set V[F] = 1
     fn op_8xx7(&mut self) {
-        //8XY7: set V[X] = (V[Y] - V[X]), if borrow set V[F] = 0, else set V[F] = 1
         self.register[15] = if self.register[((self.opcode & 0x0F00) >> 8) as usize]
             > self.register[((self.opcode & 0x00F0) >> 4) as usize]
         {
@@ -312,8 +312,8 @@ impl Chip8 {
         self.pc += 2;
     }
 
+    // 8XYE: set V[F] to MSB of V[Y], set V[X] = (V[Y] << 1)
     fn op_8xxe(&mut self) {
-        //8XYE: set V[F] to MSB of V[Y], set V[X] = (V[Y] << 1)
         self.register[15] =
             if (self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16 & 0x8000 as u16) > 0 {
                 1
@@ -325,8 +325,8 @@ impl Chip8 {
         self.pc += 2;
     }
 
+    // 9XY0: skip the next instruction if V[X] != V[Y]
     fn op_9xxx(&mut self) {
-        //9XY0: skip the next instruction if V[X] != V[Y]
         let x: u16 = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
         let y: u16 = self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16;
         if x != y {
@@ -336,28 +336,27 @@ impl Chip8 {
         }
     }
 
+    // ANNN: sets the index to the adress NNN
     fn op_axxx(&mut self) {
-        //ANNN: sets the index to the adress NNN
         self.index = self.opcode & 0x0FFF;
         self.pc += 2;
     }
 
+    // BNNN: jump to the address V[0] + NNN
     fn op_bxxx(&mut self) {
-        //BNNN: jump to the address V[0] + NNN
         self.pc = self.register[0] as u16 + self.opcode & 0x0FFF;
     }
 
+    // CXNN: set V[X] to random u8 and NN
     fn op_cxxx(&mut self) {
-        //CXNN: set V[X] to random u8 and NN
         let r = rand::random::<(u8)>();
         let n = (self.opcode & 0x00FF) as u8;
         self.register[((self.opcode & 0x0F00) >> 8) as usize] = r & n;
         self.pc += 2;
     }
 
+    // DXYN: draw sprite at coordinate (V[X],V[Y]) with a width of 8 pixels and a hight of N pixels
     fn op_dxxx(&mut self) {
-        //DXYN: draw sprite at coordinate (V[X],V[Y])
-        //      with a width of 8 pixels and a hight of N pixels
         let x = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
         let y = self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16;
         let hight = self.opcode & 0x000F;
@@ -369,7 +368,7 @@ impl Chip8 {
             font_row = self.memory[(self.index + row) as usize];
 
             for column in 0..8 {
-                //this checks for every column/pixel in this row if it equals 0
+                // This checks for every column/pixel in this row if it equals 0
                 if font_row & (0x80 >> column) != 0 {
                     if self.display[(x + column + ((y + row) * 64)) as usize] == true {
                         self.register[15] = 1;
@@ -382,8 +381,8 @@ impl Chip8 {
         self.pc += 2;
     }
 
+    // EX9A: skip instruction if pressed key == V[X]
     fn op_ex9e(&mut self, key: u8) {
-        //EX9A: skip instruction if pressed key == V[X]
         let x = self.register[((self.opcode & 0x0F00) >> 8) as usize];
         if x == key {
             self.pc += 4;
@@ -392,8 +391,8 @@ impl Chip8 {
         }
     }
 
+    // EXA1: skip instruction if pressed key != V[X]
     fn op_exa1(&mut self, key: u8) {
-        //EXA1: skip instruction if pressed key != V[X]
         let x = self.register[((self.opcode & 0x0F00) >> 8) as usize];
         if x != key {
             self.pc += 4;
@@ -402,14 +401,14 @@ impl Chip8 {
         }
     }
 
+    // FX07:set V[X] to delay_timer
     fn op_fx07(&mut self) {
-        //FX07:set V[X] to delay_timer
         self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.delay_timer;
         self.pc += 2;
     }
 
+    // FX0A: wait for key press, store key in V[X]
     fn op_fx0a(&mut self, event_pump: &mut sdl2::EventPump) {
-        //FX0A: wait for key press, store key in V[X]
         'fx0a: loop {
             for event in event_pump.poll_iter() {
                 for (keycode, new_key) in &KEY_CODES_DOWN {
@@ -429,34 +428,34 @@ impl Chip8 {
         }
     }
 
+    // FX15: set delay_timer to V[X]
     fn op_fx15(&mut self) {
-        //FX15: set delay_timer to V[X]
         self.delay_timer = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u8;
         self.pc += 2;
     }
 
+    // FX18: set sound_timer to V[X]
     fn op_fx18(&mut self) {
-        //FX18: set sound_timer to V[X]
         self.sound_timer = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u8;
         self.pc += 2;
     }
 
+    // FX1E: add V[X] to I
     fn op_fx1e(&mut self) {
-        //FX1E: add V[X] to I
         self.index += self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
         self.pc += 2;
     }
 
+    // FX29: set I to the location ofthe sprite for the character in V[X]
     fn op_fx29(&mut self) {
-        //FX29: set I to the location ofthe sprite for the character in V[X]
         let sprite: u8 = self.register[((self.opcode & 0x0F00) >> 8) as usize];
         self.index = (sprite * 5) as u16;
         self.pc += 2;
     }
 
+    // FX33: store the BCD of V[X] in memory as following:
+    // M[I] = V[X](3), M[I+1] = V[X](2), M[I+2] = V[X](1)
     fn op_fx33(&mut self) {
-        //FX33: store the BCD of V[X] in memory as following:
-        //M[I] = V[X](3), M[I+1] = V[X](2), M[I+2] = V[X](1)
         self.memory[self.index as usize] =
             self.register[((self.opcode & 0x0F00) >> 8) as usize] / 100;
         self.memory[(self.index + 1) as usize] =
@@ -466,8 +465,8 @@ impl Chip8 {
         self.pc += 2;
     }
 
+    // FX55: store V[0] to V[X] in memory starting with I
     fn op_fx55(&mut self) {
-        //FX55: store V[0] to V[X] in memory starting with I
         for x in 0..((self.opcode & 0x0F00) >> 8) {
             self.memory[self.index as usize] = self.register[x as usize];
             self.index += 1;
@@ -475,8 +474,8 @@ impl Chip8 {
         self.pc += 2;
     }
 
+    // FX65: store memory starting with I in V[0] to V[X]
     fn op_fx65(&mut self) {
-        //FX65: store memory starting with I in V[0] to V[X]
         for x in 0..((self.opcode & 0x0F00) >> 8) {
             self.register[x as usize] = self.memory[self.index as usize];
             self.index += 1;

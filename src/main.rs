@@ -29,7 +29,7 @@ fn main() {
 
     let mut event_pump = display.sdl_context.event_pump().unwrap();
 
-    //variables for pressed keys
+    // Variables for pressed keys
     let mut key = 0x10;
     let mut old_key = 0x10;
     'main: loop {
