@@ -44,15 +44,15 @@ impl Chip8 {
 
         if !is_test {
             for (i, byte) in op_code.iter().enumerate() {
-                memory[0x200 + i] = byte.clone();
+                memory[0x200 + i] = *byte;
             }
 
             for (i, byte) in FONT_SET.iter().enumerate() {
-                memory[i] = byte.clone();
+                memory[i] = *byte;
             }
         } else {
             for (i, byte) in FONT_SET.iter().enumerate() {
-                memory[i] = byte.clone();
+                memory[i] = *byte;
             }
 
             memory[0x200] = 0xD1;
@@ -87,7 +87,7 @@ impl Chip8 {
             if self.draw_flag {
                 let mut i = 0;
                 while i < 64 * 32 {
-                    if self.display[i] == true {
+                    if self.display[i] {
                         //println!("display=true at: {}", i)
                     }
                     i += 1;
@@ -103,8 +103,8 @@ impl Chip8 {
     }
 
     fn fetch_opcode(&mut self) {
-        self.opcode = ((self.memory[self.pc as usize] as u16) << 8)
-            | self.memory[(self.pc + 1) as usize] as u16;
+        self.opcode = (u16::from(self.memory[self.pc as usize]) << 8)
+            | u16::from(self.memory[(self.pc + 1) as usize]);
     }
 
     fn run_opcode(&mut self, key: u8, event_pump: &mut sdl2::EventPump) {
@@ -191,8 +191,8 @@ impl Chip8 {
 
     // 3XNN: skip next instruction if V[X] == NN
     fn op_3xxx(&mut self) {
-        let x: u16 = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
-        let y: u16 = (self.opcode & 0x00FF) as u16;
+        let x = u16::from(self.register[((self.opcode & 0x0F00) >> 8) as usize]);
+        let y = self.opcode & 0x00FF;
         if x == y {
             self.pc += 4;
         } else {
@@ -202,8 +202,8 @@ impl Chip8 {
 
     // 4XNN: skip the next instruction if V[X] != NN
     fn op_4xxx(&mut self) {
-        let x: u16 = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
-        let y: u16 = (self.opcode & 0x00FF) as u16;
+        let x = u16::from(self.register[((self.opcode & 0x0F00) >> 8) as usize]);
+        let y = self.opcode & 0x00FF;
         if x != y {
             self.pc += 4;
         } else {
@@ -213,8 +213,8 @@ impl Chip8 {
 
     // 5XY0: skip thenext instruction if V[X] == V[Y]
     fn op_5xxx(&mut self) {
-        let x: u16 = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
-        let y: u16 = self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16;
+        let x = u16::from(self.register[((self.opcode & 0x0F00) >> 8) as usize]);
+        let y = u16::from(self.register[((self.opcode & 0x00F0) >> 4) as usize]);
         if x == y {
             self.pc += 4;
         } else {
@@ -267,7 +267,7 @@ impl Chip8 {
         let x = (self.opcode & 0x0F00) >> 8;
         let y = (self.opcode & 0x00F0) >> 4;
         self.register[15] = 0;
-        let sum = self.register[x as usize] as u16 + self.register[y as usize] as u16;
+        let sum = u16::from(self.register[x as usize]) + u16::from(self.register[y as usize]);
         if sum > 0xFF {
             self.register[15] = 1;
         }
@@ -284,7 +284,7 @@ impl Chip8 {
             self.register[15] = 0;
             self.register[x as usize] = 0;
         } else {
-            self.register[x as usize] = self.register[x as usize] - self.register[y as usize];
+            self.register[x as usize] -= self.register[y as usize];
         }
         self.pc += 2;
     }
@@ -315,7 +315,7 @@ impl Chip8 {
     // 8XYE: set V[F] to MSB of V[Y], set V[X] = (V[Y] << 1)
     fn op_8xxe(&mut self) {
         self.register[15] =
-            if (self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16 & 0x8000 as u16) > 0 {
+            if u16::from(self.register[((self.opcode & 0x00F0) >> 4) as usize]) & 0x8000 > 0 {
                 1
             } else {
                 0
@@ -327,8 +327,8 @@ impl Chip8 {
 
     // 9XY0: skip the next instruction if V[X] != V[Y]
     fn op_9xxx(&mut self) {
-        let x: u16 = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
-        let y: u16 = self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16;
+        let x = u16::from(self.register[((self.opcode & 0x0F00) >> 8) as usize]);
+        let y = u16::from(self.register[((self.opcode & 0x00F0) >> 4) as usize]);
         if x != y {
             self.pc += 4;
         } else {
@@ -344,7 +344,7 @@ impl Chip8 {
 
     // BNNN: jump to the address V[0] + NNN
     fn op_bxxx(&mut self) {
-        self.pc = self.register[0] as u16 + self.opcode & 0x0FFF;
+        self.pc = u16::from(self.register[0]) + (self.opcode & 0x0FFF);
     }
 
     // CXNN: set V[X] to random u8 and NN
@@ -357,8 +357,8 @@ impl Chip8 {
 
     // DXYN: draw sprite at coordinate (V[X],V[Y]) with a width of 8 pixels and a hight of N pixels
     fn op_dxxx(&mut self) {
-        let x = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
-        let y = self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16;
+        let x = u16::from(self.register[((self.opcode & 0x0F00) >> 8) as usize]);
+        let y = u16::from(self.register[((self.opcode & 0x00F0) >> 4) as usize]);
         let hight = self.opcode & 0x000F;
         let mut font_row: u8;
 
@@ -370,7 +370,7 @@ impl Chip8 {
             for column in 0..8 {
                 // This checks for every column/pixel in this row if it equals 0
                 if font_row & (0x80 >> column) != 0 {
-                    if self.display[(x + column + ((y + row) * 64)) as usize] == true {
+                    if self.display[(x + column + ((y + row) * 64)) as usize] {
                         self.register[15] = 1;
                     }
                     self.display[(x + column + ((y + row) * 64)) as usize] ^= true;
@@ -412,16 +412,14 @@ impl Chip8 {
         'fx0a: loop {
             for event in event_pump.poll_iter() {
                 for (keycode, new_key) in &KEY_CODES_DOWN {
-                    match event {
-                        Event::KeyDown {
-                            keycode: Some(k), ..
-                        } => {
-                            if k == *keycode {
-                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = *new_key;
-                                break 'fx0a;
-                            }
+                    if let Event::KeyDown {
+                        keycode: Some(k), ..
+                    } = event
+                    {
+                        if k == *keycode {
+                            self.register[((self.opcode & 0x0F00) >> 8) as usize] = *new_key;
+                            break 'fx0a;
                         }
-                        _ => (),
                     }
                 }
             }
@@ -442,14 +440,14 @@ impl Chip8 {
 
     // FX1E: add V[X] to I
     fn op_fx1e(&mut self) {
-        self.index += self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
+        self.index += u16::from(self.register[((self.opcode & 0x0F00) >> 8) as usize]);
         self.pc += 2;
     }
 
     // FX29: set I to the location ofthe sprite for the character in V[X]
     fn op_fx29(&mut self) {
         let sprite: u8 = self.register[((self.opcode & 0x0F00) >> 8) as usize];
-        self.index = (sprite * 5) as u16;
+        self.index = u16::from(sprite * 5);
         self.pc += 2;
     }
 

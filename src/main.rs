@@ -41,29 +41,25 @@ fn main() {
                 _ => {}
             }
             for (keycode, new_key) in &KEY_CODES_DOWN {
-                match event {
-                    Event::KeyDown {
-                        keycode: Some(k), ..
-                    } => {
-                        if k == *keycode {
-                            key = *new_key;
-                            break;
-                        }
+                if let Event::KeyDown {
+                    keycode: Some(k), ..
+                } = event
+                {
+                    if k == *keycode {
+                        key = *new_key;
+                        break;
                     }
-                    _ => (),
                 }
             }
             for (keycode, new_key) in &KEY_CODES_UP {
-                match event {
-                    Event::KeyUp {
-                        keycode: Some(k), ..
-                    } => {
-                        if k == *keycode {
-                            key = *new_key;
-                            break;
-                        }
+                if let Event::KeyUp {
+                    keycode: Some(k), ..
+                } = event
+                {
+                    if k == *keycode {
+                        key = *new_key;
+                        break;
                     }
-                    _ => (),
                 }
             }
         }
