@@ -109,7 +109,11 @@ impl Chip8 {
 
     fn run_opcode(&mut self, key: u8, event_pump: &mut sdl2::EventPump) {
         match self.opcode & 0xF000 {
-            0x0000 => self.op_0xxx(),
+            0x0000 => match self.opcode & 0x00FF {
+                0x00E0 => self.op_00e0(),
+                0x00EE => self.op_00ee(),
+                _ => self.unimplemented(),
+            },
             0x1000 => self.op_1xxx(),
             0x2000 => self.op_2xxx(),
             0x3000 => self.op_3xxx(),
@@ -117,50 +121,60 @@ impl Chip8 {
             0x5000 => self.op_5xxx(),
             0x6000 => self.op_6xxx(),
             0x7000 => self.op_7xxx(),
-            0x8000 => self.op_8xxx(),
+            0x8000 => match self.opcode & 0x000F {
+                0x0000 => self.op_8xx0(),
+                0x0001 => self.op_8xx1(),
+                0x0002 => self.op_8xx2(),
+                0x0003 => self.op_8xx3(),
+                0x0004 => self.op_8xx4(),
+                0x0005 => self.op_8xx5(),
+                0x0006 => self.op_8xx6(),
+                0x0007 => self.op_8xx7(),
+                0x000E => self.op_8xxe(),
+                _ => self.unimplemented(),
+            },
             0x9000 => self.op_9xxx(),
             0xA000 => self.op_axxx(),
             0xB000 => self.op_bxxx(),
             0xC000 => self.op_cxxx(),
             0xD000 => self.op_dxxx(),
-            0xE000 => self.op_exxx(key),
-            0xF000 => self.op_fxxx(event_pump),
-            _ => {
-                println!("opcode: {:X},not implemented yet", self.opcode);
-                self.pc += 2;
-            }
+            0xE000 => match self.opcode & 0x00FF {
+                0x009E => self.op_ex9e(key),
+                0x00A1 => self.op_exa1(key),
+                _ => self.unimplemented(),
+            },
+            0xF000 => match self.opcode & 0x0FF {
+                0x0007 => self.op_fx07(),
+                0x000A => self.op_fx0a(event_pump),
+                0x0015 => self.op_fx15(),
+                0x0018 => self.op_fx18(),
+                0x001E => self.op_fx1e(),
+                0x0029 => self.op_fx29(),
+                0x0033 => self.op_fx33(),
+                0x0055 => self.op_fx55(),
+                0x0065 => self.op_fx65(),
+                _ => self.unimplemented(),
+            },
+            _ => self.unimplemented(),
         }
     }
 
-    fn op_0xxx(&mut self) {
-        match self.opcode & 0xFF00 {
-            0x0000 => self.op_00xx(),
-            _ => {
-                println!("{} not implemented yet!!!", self.opcode);
-                self.pc += 2;
-            }
-        }
+    fn unimplemented(&mut self) {
+        println!("opcode: {:X},not implemented yet", self.opcode);
+        self.pc += 2;
     }
 
-    fn op_00xx(&mut self) {
-        match self.opcode & 0x00FF {
-            0x00E0 => {
-                //00E0: clear the display
-                self.display = [false; 64 * 32];
-                self.pc += 2;
-            }
+    fn op_00e0(&mut self) {
+        //00E0: clear the display
+        self.display = [false; 64 * 32];
+        self.pc += 2;
+    }
 
-            0x00EE => {
-                //00EE: return from subroutine
-                self.sp -= 1;
-                self.pc = self.stack[(self.sp) as usize];
-                self.pc += 2;
-            }
-            _ => {
-                println!("{:X} not implemented yet!!!", self.opcode);
-                self.pc += 2;
-            }
-        }
+    fn op_00ee(&mut self) {
+        //00EE: return from subroutine
+        self.sp -= 1;
+        self.pc = self.stack[(self.sp) as usize];
+        self.pc += 2;
     }
 
     fn op_1xxx(&mut self) {
@@ -220,107 +234,95 @@ impl Chip8 {
         self.pc += 2;
     }
 
-    fn op_8xxx(&mut self) {
-        match self.opcode & 0x000F {
-            0x0000 => {
-                //8XY0: set V[X] = V[Y]
-                self.register[((self.opcode & 0x0F00) >> 8) as usize] =
-                    self.register[((self.opcode & 0x00F0) >> 4) as usize];
-                self.pc += 2;
-            }
+    fn op_8xx0(&mut self) {
+        //8XY0: set V[X] = V[Y]
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] =
+            self.register[((self.opcode & 0x00F0) >> 4) as usize];
+        self.pc += 2;
+    }
 
-            0x0001 => {
-                //8XY1: set V[X] = (V[X] or V[Y])
-                self.register[((self.opcode & 0x0F00) >> 8) as usize] |=
-                    self.register[((self.opcode & 0x00F0) >> 4) as usize];
-                self.pc += 2;
-            }
+    fn op_8xx1(&mut self) {
+        //8XY1: set V[X] = (V[X] or V[Y])
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] |=
+            self.register[((self.opcode & 0x00F0) >> 4) as usize];
+        self.pc += 2;
+    }
 
-            0x0002 => {
-                //8XY2: set V[X] = (V[X] and V[Y])
-                self.register[((self.opcode & 0x0F00) >> 8) as usize] &=
-                    self.register[((self.opcode & 0x00F0) >> 4) as usize];
-                self.pc += 2;
-            }
+    fn op_8xx2(&mut self) {
+        //8XY2: set V[X] = (V[X] and V[Y])
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] &=
+            self.register[((self.opcode & 0x00F0) >> 4) as usize];
+        self.pc += 2;
+    }
 
-            0x0003 => {
-                //8XY3: set V[X] = (V[X] xor V[Y])
-                self.register[((self.opcode & 0x0F00) >> 8) as usize] ^=
-                    self.register[((self.opcode & 0x00F0) >> 4) as usize];
-                self.pc += 2;
-            }
+    fn op_8xx3(&mut self) {
+        //8XY3: set V[X] = (V[X] xor V[Y])
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] ^=
+            self.register[((self.opcode & 0x00F0) >> 4) as usize];
+        self.pc += 2;
+    }
 
-            0x0004 => {
-                //8XY4: add V[Y] to V[X], if carry set V[F] = 1, if no carry set V[F] = 0
-                let x = (self.opcode & 0x0F00) >> 8;
-                let y = (self.opcode & 0x00F0) >> 4;
-                self.register[15] = 0;
-                let sum = self.register[x as usize] as u16 + self.register[y as usize] as u16;
-                if sum > 0xFF {
-                    self.register[15] = 1;
-                }
-                self.register[x as usize] = sum as u8;
-                self.pc += 2;
-            }
-
-            0x0005 => {
-                //8XY5: set V[X] -= V[Y], if borrow set V[F] = 0, else set V[F] = 1
-                let x = (self.opcode & 0x0F00) >> 8;
-                let y = (self.opcode & 0x00F0) >> 4;
-                self.register[15] = 1;
-                if self.register[y as usize] > self.register[x as usize] {
-                    self.register[15] = 0;
-                    self.register[x as usize] = 0;
-                } else {
-                    self.register[x as usize] =
-                        self.register[x as usize] - self.register[y as usize];
-                }
-                self.pc += 2;
-            }
-
-            0x0006 => {
-                //8XY6: set V[F] to LSB of V[Y], set V[X] = (V[Y] >> 1)
-                self.register[15] = self.register[((self.opcode & 0x00F0) >> 4) as usize] & 0x1;
-                self.register[((self.opcode & 0x0F00) >> 8) as usize] =
-                    self.register[((self.opcode & 0x00F0) >> 4) as usize] >> 1;
-                self.pc += 2;
-            }
-
-            0x0007 => {
-                //8XY7: set V[X] = (V[Y] - V[X]), if borrow set V[F] = 0, else set V[F] = 1
-                self.register[15] = if self.register[((self.opcode & 0x0F00) >> 8) as usize]
-                    > self.register[((self.opcode & 0x00F0) >> 4) as usize]
-                {
-                    1
-                } else {
-                    0
-                };
-                self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register
-                    [((self.opcode & 0x00F0) >> 4) as usize]
-                    - self.register[((self.opcode & 0x0F00) >> 8) as usize];
-                self.pc += 2;
-            }
-
-            0x000E => {
-                //8XYE: set V[F] to MSB of V[Y], set V[X] = (V[Y] << 1)
-                self.register[15] = if (self.register[((self.opcode & 0x00F0) >> 4) as usize]
-                    as u16
-                    & 0x8000 as u16)
-                    > 0
-                {
-                    1
-                } else {
-                    0
-                };
-                self.register[((self.opcode & 0x0F00) >> 8) as usize] =
-                    self.register[((self.opcode & 0x00F0) >> 4) as usize] << 1;
-                self.pc += 2;
-            }
-            _ => {
-                println!("opcode: {:X},not implemented yet", self.opcode);
-                self.pc += 2;
-            }
+    fn op_8xx4(&mut self) {
+        //8XY4: add V[Y] to V[X], if carry set V[F] = 1, if no carry set V[F] = 0
+        let x = (self.opcode & 0x0F00) >> 8;
+        let y = (self.opcode & 0x00F0) >> 4;
+        self.register[15] = 0;
+        let sum = self.register[x as usize] as u16 + self.register[y as usize] as u16;
+        if sum > 0xFF {
+            self.register[15] = 1;
         }
+        self.register[x as usize] = sum as u8;
+        self.pc += 2;
+    }
+
+    fn op_8xx5(&mut self) {
+        //8XY5: set V[X] -= V[Y], if borrow set V[F] = 0, else set V[F] = 1
+        let x = (self.opcode & 0x0F00) >> 8;
+        let y = (self.opcode & 0x00F0) >> 4;
+        self.register[15] = 1;
+        if self.register[y as usize] > self.register[x as usize] {
+            self.register[15] = 0;
+            self.register[x as usize] = 0;
+        } else {
+            self.register[x as usize] = self.register[x as usize] - self.register[y as usize];
+        }
+        self.pc += 2;
+    }
+
+    fn op_8xx6(&mut self) {
+        //8XY6: set V[F] to LSB of V[Y], set V[X] = (V[Y] >> 1)
+        self.register[15] = self.register[((self.opcode & 0x00F0) >> 4) as usize] & 0x1;
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] =
+            self.register[((self.opcode & 0x00F0) >> 4) as usize] >> 1;
+        self.pc += 2;
+    }
+
+    fn op_8xx7(&mut self) {
+        //8XY7: set V[X] = (V[Y] - V[X]), if borrow set V[F] = 0, else set V[F] = 1
+        self.register[15] = if self.register[((self.opcode & 0x0F00) >> 8) as usize]
+            > self.register[((self.opcode & 0x00F0) >> 4) as usize]
+        {
+            1
+        } else {
+            0
+        };
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register
+            [((self.opcode & 0x00F0) >> 4) as usize]
+            - self.register[((self.opcode & 0x0F00) >> 8) as usize];
+        self.pc += 2;
+    }
+
+    fn op_8xxe(&mut self) {
+        //8XYE: set V[F] to MSB of V[Y], set V[X] = (V[Y] << 1)
+        self.register[15] =
+            if (self.register[((self.opcode & 0x00F0) >> 4) as usize] as u16 & 0x8000 as u16) > 0 {
+                1
+            } else {
+                0
+            };
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] =
+            self.register[((self.opcode & 0x00F0) >> 4) as usize] << 1;
+        self.pc += 2;
     }
 
     fn op_9xxx(&mut self) {
@@ -380,121 +382,105 @@ impl Chip8 {
         self.pc += 2;
     }
 
-    fn op_exxx(&mut self, key: u8) {
-        match self.opcode & 0x00FF {
-            0x009E => {
-                //EX9A: skip instruction if pressed key == V[X]
-                let x = self.register[((self.opcode & 0x0F00) >> 8) as usize];
-                if x == key {
-                    self.pc += 4;
-                } else {
-                    self.pc += 2;
+    fn op_ex9e(&mut self, key: u8) {
+        //EX9A: skip instruction if pressed key == V[X]
+        let x = self.register[((self.opcode & 0x0F00) >> 8) as usize];
+        if x == key {
+            self.pc += 4;
+        } else {
+            self.pc += 2;
+        }
+    }
+
+    fn op_exa1(&mut self, key: u8) {
+        //EXA1: skip instruction if pressed key != V[X]
+        let x = self.register[((self.opcode & 0x0F00) >> 8) as usize];
+        if x != key {
+            self.pc += 4;
+        } else {
+            self.pc += 2;
+        }
+    }
+
+    fn op_fx07(&mut self) {
+        //FX07:set V[X] to delay_timer
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.delay_timer;
+        self.pc += 2;
+    }
+
+    fn op_fx0a(&mut self, event_pump: &mut sdl2::EventPump) {
+        //FX0A: wait for key press, store key in V[X]
+        'fx0a: loop {
+            for event in event_pump.poll_iter() {
+                for (keycode, new_key) in &KEY_CODES_DOWN {
+                    match event {
+                        Event::KeyDown {
+                            keycode: Some(k), ..
+                        } => {
+                            if k == *keycode {
+                                self.register[((self.opcode & 0x0F00) >> 8) as usize] = *new_key;
+                                break 'fx0a;
+                            }
+                        }
+                        _ => (),
+                    }
                 }
-            }
-            0x00A1 => {
-                //EXA1: skip instruction if pressed key != V[X]
-                let x = self.register[((self.opcode & 0x0F00) >> 8) as usize];
-                if x != key {
-                    self.pc += 4;
-                } else {
-                    self.pc += 2;
-                }
-            }
-            _ => {
-                println!("opcode: {:X}, not implemented yet", self.opcode);
-                self.pc += 2;
             }
         }
     }
 
-    fn op_fxxx(&mut self, event_pump: &mut sdl2::EventPump) {
-        match self.opcode & 0x00FF {
-            0x0007 => {
-                //FX07:set V[X] to delay_timer
-                self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.delay_timer;
-                self.pc += 2;
-            }
+    fn op_fx15(&mut self) {
+        //FX15: set delay_timer to V[X]
+        self.delay_timer = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u8;
+        self.pc += 2;
+    }
 
-            0x000A => {
-                //FX0A: wait for key press, store key in V[X]
-                'fx0a: loop {
-                    for event in event_pump.poll_iter() {
-                        for (keycode, new_key) in &KEY_CODES_DOWN {
-                            match event {
-                                Event::KeyDown {
-                                    keycode: Some(k), ..
-                                } => {
-                                    if k == *keycode {
-                                        self.register[((self.opcode & 0x0F00) >> 8) as usize] =
-                                            *new_key;
-                                        break 'fx0a;
-                                    }
-                                }
-                                _ => (),
-                            }
-                        }
-                    }
-                }
-            }
+    fn op_fx18(&mut self) {
+        //FX18: set sound_timer to V[X]
+        self.sound_timer = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u8;
+        self.pc += 2;
+    }
 
-            0x0015 => {
-                //FX15: set delay_timer to V[X]
-                self.delay_timer = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u8;
-                self.pc += 2;
-            }
+    fn op_fx1e(&mut self) {
+        //FX1E: add V[X] to I
+        self.index += self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
+        self.pc += 2;
+    }
 
-            0x0018 => {
-                //FX18: set sound_timer to V[X]
-                self.sound_timer = self.register[((self.opcode & 0x0F00) >> 8) as usize] as u8;
-                self.pc += 2;
-            }
-            0x001E => {
-                //FX1E: add V[X] to I
-                self.index += self.register[((self.opcode & 0x0F00) >> 8) as usize] as u16;
-                self.pc += 2;
-            }
+    fn op_fx29(&mut self) {
+        //FX29: set I to the location ofthe sprite for the character in V[X]
+        let sprite: u8 = self.register[((self.opcode & 0x0F00) >> 8) as usize];
+        self.index = (sprite * 5) as u16;
+        self.pc += 2;
+    }
 
-            0x0029 => {
-                //FX29: set I to the location ofthe sprite for the character in V[X]
-                let sprite: u8 = self.register[((self.opcode & 0x0F00) >> 8) as usize];
-                self.index = (sprite * 5) as u16;
-                self.pc += 2;
-            }
+    fn op_fx33(&mut self) {
+        //FX33: store the BCD of V[X] in memory as following:
+        //M[I] = V[X](3), M[I+1] = V[X](2), M[I+2] = V[X](1)
+        self.memory[self.index as usize] =
+            self.register[((self.opcode & 0x0F00) >> 8) as usize] / 100;
+        self.memory[(self.index + 1) as usize] =
+            (self.register[((self.opcode & 0x0F00) >> 8) as usize] % 100) / 10;
+        self.memory[(self.index + 2) as usize] =
+            self.register[((self.opcode & 0x0F00) >> 8) as usize] % 10;
+        self.pc += 2;
+    }
 
-            0x0033 => {
-                //FX33: store the BCD of V[X] in memory as following:
-                //M[I] = V[X](3), M[I+1] = V[X](2), M[I+2] = V[X](1)
-                self.memory[self.index as usize] =
-                    self.register[((self.opcode & 0x0F00) >> 8) as usize] / 100;
-                self.memory[(self.index + 1) as usize] =
-                    (self.register[((self.opcode & 0x0F00) >> 8) as usize] % 100) / 10;
-                self.memory[(self.index + 2) as usize] =
-                    self.register[((self.opcode & 0x0F00) >> 8) as usize] % 10;
-                self.pc += 2;
-            }
-
-            0x0055 => {
-                //FX55: store V[0] to V[X] in memory starting with I
-                for x in 0..((self.opcode & 0x0F00) >> 8) {
-                    self.memory[self.index as usize] = self.register[x as usize];
-                    self.index += 1;
-                }
-                self.pc += 2;
-            }
-
-            0x0065 => {
-                //FX65: store memory starting with I in V[0] to V[X]
-                for x in 0..((self.opcode & 0x0F00) >> 8) {
-                    self.register[x as usize] = self.memory[self.index as usize];
-                    self.index += 1;
-                }
-                self.pc += 2;
-            }
-
-            _ => {
-                println!("opcode: {:X}, not implemented yet", self.opcode);
-                self.pc += 2;
-            }
+    fn op_fx55(&mut self) {
+        //FX55: store V[0] to V[X] in memory starting with I
+        for x in 0..((self.opcode & 0x0F00) >> 8) {
+            self.memory[self.index as usize] = self.register[x as usize];
+            self.index += 1;
         }
+        self.pc += 2;
+    }
+
+    fn op_fx65(&mut self) {
+        //FX65: store memory starting with I in V[0] to V[X]
+        for x in 0..((self.opcode & 0x0F00) >> 8) {
+            self.register[x as usize] = self.memory[self.index as usize];
+            self.index += 1;
+        }
+        self.pc += 2;
     }
 }
