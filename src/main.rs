@@ -4,12 +4,15 @@ use crate::display::Display;
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
+use std::{thread, time};
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
 mod chip8;
 mod display;
+
+const TICK_WAIT: time::Duration = time::Duration::from_millis(1000 / 60);
 
 fn read_rom(path: String) -> Vec<u8> {
     let mut f = File::open(&path).expect("Error while opening file.");
@@ -67,6 +70,7 @@ fn main() {
         if chip8.draw_flag {
             display.render(chip8.display);
         }
+        thread::sleep(TICK_WAIT);
         if key != old_key {
             old_key = key;
         }
