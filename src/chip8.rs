@@ -299,16 +299,16 @@ impl Chip8 {
 
     // 8XY7: set V[X] = (V[Y] - V[X]), if borrow set V[F] = 0, else set V[F] = 1
     fn op_8xx7(&mut self) {
-        self.register[15] = if self.register[((self.opcode & 0x0F00) >> 8) as usize]
-            > self.register[((self.opcode & 0x00F0) >> 4) as usize]
+        if self.register[((self.opcode & 0x00F0) >> 4) as usize]
+            > self.register[((self.opcode & 0x0F00) >> 8) as usize]
         {
-            1
+            self.register[15] = 1;
         } else {
-            0
-        };
-        self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register
-            [((self.opcode & 0x00F0) >> 4) as usize]
-            - self.register[((self.opcode & 0x0F00) >> 8) as usize];
+            self.register[15] = 0;
+        }
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] = (self.register
+            [((self.opcode & 0x00F0) >> 4) as usize])
+            .wrapping_sub(self.register[((self.opcode & 0x0F00) >> 8) as usize]);
         self.pc += 2;
     }
 
