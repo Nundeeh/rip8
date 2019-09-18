@@ -230,12 +230,16 @@ impl Chip8 {
 
     // 7XNN: add NN to V[X]
     fn op_7xxx(&mut self) {
-        if (self.opcode & 0x00FF) > u16::from(0xFF - self.register[((self.opcode & 0x0F00) >> 8) as usize]) {
+        if (self.opcode & 0x00FF)
+            > u16::from(0xFF - self.register[((self.opcode & 0x0F00) >> 8) as usize])
+        {
             self.register[15] = 1;
         } else {
             self.register[15] = 0;
         }
-        self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register[((self.opcode & 0x0F00) >> 8) as usize].wrapping_add((self.opcode & 0x00FF) as u8);
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register
+            [((self.opcode & 0x0F00) >> 8) as usize]
+            .wrapping_add((self.opcode & 0x00FF) as u8);
         self.pc += 2;
     }
 
@@ -323,12 +327,11 @@ impl Chip8 {
 
     // 8XYE: set V[F] to MSB of V[Y], set V[X] = (V[Y] << 1)
     fn op_8xxe(&mut self) {
-        self.register[15] =
-            if self.register[((self.opcode & 0x0F00) >> 8) as usize] & 0x80 > 0 {
-                1
-            } else {
-                0
-            };
+        self.register[15] = if self.register[((self.opcode & 0x0F00) >> 8) as usize] & 0x80 > 0 {
+            1
+        } else {
+            0
+        };
         self.register[((self.opcode & 0x0F00) >> 8) as usize] =
             self.register[((self.opcode & 0x00F0) >> 4) as usize] << 1;
         self.pc += 2;
