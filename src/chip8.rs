@@ -114,30 +114,30 @@ impl Chip8 {
                 0x00EE => self.op_00ee(),
                 _ => self.unimplemented(),
             },
-            0x1000 => self.op_1xxx(),
-            0x2000 => self.op_2xxx(),
-            0x3000 => self.op_3xxx(),
-            0x4000 => self.op_4xxx(),
-            0x5000 => self.op_5xxx(),
-            0x6000 => self.op_6xxx(),
-            0x7000 => self.op_7xxx(),
+            0x1000 => self.op_1nnn(),
+            0x2000 => self.op_2nnn(),
+            0x3000 => self.op_3xnn(),
+            0x4000 => self.op_4xnn(),
+            0x5000 => self.op_5xy0(),
+            0x6000 => self.op_6xnn(),
+            0x7000 => self.op_7xnn(),
             0x8000 => match self.opcode & 0x000F {
-                0x0000 => self.op_8xx0(),
-                0x0001 => self.op_8xx1(),
-                0x0002 => self.op_8xx2(),
-                0x0003 => self.op_8xx3(),
-                0x0004 => self.op_8xx4(),
-                0x0005 => self.op_8xx5(),
-                0x0006 => self.op_8xx6(),
-                0x0007 => self.op_8xx7(),
-                0x000E => self.op_8xxe(),
+                0x0000 => self.op_8xy0(),
+                0x0001 => self.op_8xy1(),
+                0x0002 => self.op_8xy2(),
+                0x0003 => self.op_8xy3(),
+                0x0004 => self.op_8xy4(),
+                0x0005 => self.op_8xy5(),
+                0x0006 => self.op_8xy6(),
+                0x0007 => self.op_8xy7(),
+                0x000E => self.op_8xye(),
                 _ => self.unimplemented(),
             },
-            0x9000 => self.op_9xxx(),
-            0xA000 => self.op_axxx(),
-            0xB000 => self.op_bxxx(),
-            0xC000 => self.op_cxxx(),
-            0xD000 => self.op_dxxx(),
+            0x9000 => self.op_9xy0(),
+            0xA000 => self.op_annn(),
+            0xB000 => self.op_bnnn(),
+            0xC000 => self.op_cxnn(),
+            0xD000 => self.op_dxyn(),
             0xE000 => match self.opcode & 0x00FF {
                 0x009E => self.op_ex9e(key),
                 0x00A1 => self.op_exa1(key),
@@ -193,19 +193,19 @@ impl Chip8 {
     }
 
     // 1NNN: Jump to the address NNN
-    fn op_1xxx(&mut self) {
+    fn op_1nnn(&mut self) {
         self.pc = self.nnn();
     }
 
     // 2NNN: call subroutine at NNN -> store pc on stack and jump to address NNN
-    fn op_2xxx(&mut self) {
+    fn op_2nnn(&mut self) {
         self.stack[self.sp as usize] = self.pc;
         self.sp += 1;
         self.pc = self.nnn();
     }
 
     // 3XNN: skip next instruction if V[X] == NN
-    fn op_3xxx(&mut self) {
+    fn op_3xnn(&mut self) {
         if self.register[self.x()] == self.nn() {
             self.pc += 2;
         }
@@ -213,7 +213,7 @@ impl Chip8 {
     }
 
     // 4XNN: skip the next instruction if V[X] != NN
-    fn op_4xxx(&mut self) {
+    fn op_4xnn(&mut self) {
         if self.register[self.x()] != self.nn() {
             self.pc += 2;
         }
@@ -221,7 +221,7 @@ impl Chip8 {
     }
 
     // 5XY0: skip thenext instruction if V[X] == V[Y]
-    fn op_5xxx(&mut self) {
+    fn op_5xy0(&mut self) {
         if self.register[self.x()] == self.register[self.y()] {
             self.pc += 2;
         }
@@ -229,13 +229,13 @@ impl Chip8 {
     }
 
     // 6XNN: sets V[X] to NN
-    fn op_6xxx(&mut self) {
+    fn op_6xnn(&mut self) {
         self.register[self.x()] = self.nn();
         self.pc += 2;
     }
 
     // 7XNN: add NN to V[X]
-    fn op_7xxx(&mut self) {
+    fn op_7xnn(&mut self) {
         if self.register[self.x()].checked_add(self.nn()).is_some() {
             self.register[15] = 1;
         } else {
@@ -246,31 +246,31 @@ impl Chip8 {
     }
 
     // 8XY0: set V[X] = V[Y]
-    fn op_8xx0(&mut self) {
+    fn op_8xy0(&mut self) {
         self.register[self.x()] = self.register[self.y()];
         self.pc += 2;
     }
 
     // 8XY1: set V[X] = (V[X] or V[Y])
-    fn op_8xx1(&mut self) {
+    fn op_8xy1(&mut self) {
         self.register[self.x()] |= self.register[self.y()];
         self.pc += 2;
     }
 
     // 8XY2: set V[X] = (V[X] and V[Y])
-    fn op_8xx2(&mut self) {
+    fn op_8xy2(&mut self) {
         self.register[self.x()] &= self.register[self.y()];
         self.pc += 2;
     }
 
     // 8XY3: set V[X] = (V[X] xor V[Y])
-    fn op_8xx3(&mut self) {
+    fn op_8xy3(&mut self) {
         self.register[self.x()] ^= self.register[self.y()];
         self.pc += 2;
     }
 
     // 8XY4: add V[Y] to V[X], if carry set V[F] = 1, if no carry set V[F] = 0
-    fn op_8xx4(&mut self) {
+    fn op_8xy4(&mut self) {
         if self.register[self.x()].checked_add(self.register[self.y()]).is_some() {
             self.register[15] = 1;
         } else {
@@ -281,7 +281,7 @@ impl Chip8 {
     }
 
     // 8XY5: set V[X] -= V[Y], if borrow set V[F] = 0, else set V[F] = 1
-    fn op_8xx5(&mut self) {
+    fn op_8xy5(&mut self) {
         self.register[15] = 1;
         if self.register[self.y()] > self.register[self.x()] {
             self.register[15] = 0;
@@ -293,7 +293,7 @@ impl Chip8 {
     }
 
     // 8XY6: set V[F] to LSB of V[X], set V[X] = (V[Y] >> 1)
-    fn op_8xx6(&mut self) {
+    fn op_8xy6(&mut self) {
         if self.register[self.x()] & 0x1 == 1 {
             self.register[15] = 1;
         } else {
@@ -304,7 +304,7 @@ impl Chip8 {
     }
 
     // 8XY7: set V[X] = (V[Y] - V[X]), if borrow set V[F] = 0, else set V[F] = 1
-    fn op_8xx7(&mut self) {
+    fn op_8xy7(&mut self) {
         if self.register[self.y()].checked_sub(self.register[self.x()]).is_some() {
             self.register[15] = 1;
         } else {
@@ -315,7 +315,7 @@ impl Chip8 {
     }
 
     // 8XYE: set V[F] to MSB of V[Y], set V[X] = (V[Y] << 1)
-    fn op_8xxe(&mut self) {
+    fn op_8xye(&mut self) {
         if self.register[self.x()] & 0x80 > 0 {
             self.register[15]= 1;
         } else {
@@ -326,7 +326,7 @@ impl Chip8 {
     }
 
     // 9XY0: skip the next instruction if V[X] != V[Y]
-    fn op_9xxx(&mut self) {
+    fn op_9xy0(&mut self) {
         if self.register[self.x()] != self.register[self.y()] {
             self.pc += 2;
         }
@@ -334,24 +334,24 @@ impl Chip8 {
     }
 
     // ANNN: sets the index to the adress NNN
-    fn op_axxx(&mut self) {
+    fn op_annn(&mut self) {
         self.index = self.nnn();
         self.pc += 2;
     }
 
     // BNNN: jump to the address V[0] + NNN
-    fn op_bxxx(&mut self) {
+    fn op_bnnn(&mut self) {
         self.pc = u16::from(self.register[0]) + (self.nnn());
     }
 
     // CXNN: set V[X] to random u8 and NN
-    fn op_cxxx(&mut self) {
+    fn op_cxnn(&mut self) {
         self.register[self.x()] = rand::random::<(u8)>() & self.nn();
         self.pc += 2;
     }
 
     // DXYN: draw sprite at coordinate (V[X],V[Y]) with a width of 8 pixels and a hight of N pixels
-    fn op_dxxx(&mut self) {
+    fn op_dxyn(&mut self) {
         let vx = u16::from(self.register[self.x()]);
         let vy = u16::from(self.register[self.y()]);
         let mut font_row: u8;
@@ -375,7 +375,7 @@ impl Chip8 {
         self.pc += 2;
     }
 
-    // EX9A: skip instruction if pressed key == V[X]
+    // EX9E: skip instruction if pressed key == V[X]
     fn op_ex9e(&mut self, key: u8) {
         if self.register[self.x()] == key {
             self.pc += 2;
