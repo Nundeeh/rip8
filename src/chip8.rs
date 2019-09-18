@@ -289,9 +289,13 @@ impl Chip8 {
         self.pc += 2;
     }
 
-    // 8XY6: set V[F] to LSB of V[Y], set V[X] = (V[Y] >> 1)
+    // 8XY6: set V[F] to LSB of V[X], set V[X] = (V[Y] >> 1)
     fn op_8xx6(&mut self) {
-        self.register[15] = self.register[((self.opcode & 0x00F0) >> 4) as usize] & 0x1;
+        if self.register[((self.opcode & 0x0F00) >> 8) as usize] & 0x1 == 1 {
+            self.register[15] = 1;
+        } else {
+            self.register[15] = 0;
+        }
         self.register[((self.opcode & 0x0F00) >> 8) as usize] =
             self.register[((self.opcode & 0x00F0) >> 4) as usize] >> 1;
         self.pc += 2;
