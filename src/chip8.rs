@@ -315,7 +315,7 @@ impl Chip8 {
     // 8XYE: set V[F] to MSB of V[Y], set V[X] = (V[Y] << 1)
     fn op_8xxe(&mut self) {
         self.register[15] =
-            if u16::from(self.register[((self.opcode & 0x00F0) >> 4) as usize]) & 0x8000 > 0 {
+            if self.register[((self.opcode & 0x0F00) >> 8) as usize] & 0x80 > 0 {
                 1
             } else {
                 0
