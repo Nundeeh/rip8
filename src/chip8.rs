@@ -474,18 +474,16 @@ impl Chip8 {
 
     // FX55: store V[0] to V[X] in memory starting with I
     fn op_fx55(&mut self) {
-        for x in 0..((self.opcode & 0x0F00) >> 8) {
-            self.memory[self.index as usize] = self.register[x as usize];
-            self.index += 1;
+        for x in 0..=((self.opcode & 0x0F00) >> 8) {
+            self.memory[(self.index + x) as usize] = self.register[x as usize];
         }
         self.pc += 2;
     }
 
     // FX65: store memory starting with I in V[0] to V[X]
     fn op_fx65(&mut self) {
-        for x in 0..((self.opcode & 0x0F00) >> 8) {
-            self.register[x as usize] = self.memory[self.index as usize];
-            self.index += 1;
+        for x in 0..=((self.opcode & 0x0F00) >> 8) {
+            self.register[x as usize] = self.memory[(self.index + x) as usize];
         }
         self.pc += 2;
     }
