@@ -230,7 +230,12 @@ impl Chip8 {
 
     // 7XNN: add NN to V[X]
     fn op_7xxx(&mut self) {
-        self.register[((self.opcode & 0x0F00) >> 8) as usize] += (self.opcode & 0x00FF) as u8;
+        if (self.opcode & 0x00FF) > u16::from(0xFF - self.register[((self.opcode & 0x0F00) >> 8) as usize]) {
+            self.register[15] = 1;
+        } else {
+            self.register[15] = 0;
+        }
+        self.register[((self.opcode & 0x0F00) >> 8) as usize] = self.register[((self.opcode & 0x0F00) >> 8) as usize].wrapping_add((self.opcode & 0x00FF) as u8);
         self.pc += 2;
     }
 
